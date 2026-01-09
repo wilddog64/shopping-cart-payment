@@ -129,17 +129,30 @@ Key configuration in `application.yml`:
 - [x] Rate limiting configuration
 - [x] RabbitMQ client dependency
 
+### Infrastructure Completed
+
+- [x] Database migrations (Flyway) - `V1__init_schema.sql`
+- [x] Dockerfile (multi-stage, JRE Alpine, non-root user)
+- [x] Maven wrapper for reproducible builds
+- [x] Kubernetes manifests in `k8s/base/`:
+  - [x] Deployment with security context and probes
+  - [x] Service (ClusterIP:8084)
+  - [x] ConfigMap for configuration
+  - [x] ServiceAccount
+  - [x] NetworkPolicy (PCI DSS isolation)
+  - [x] HorizontalPodAutoscaler (2-10 replicas)
+  - [x] Kustomization
+- [x] Vault ExternalSecrets (DB, gateways, encryption key)
+- [x] GitHub Actions CI/CD workflows:
+  - [x] ci.yaml (build, test, security scan, Docker, deploy)
+  - [x] pr-validation.yaml (PR checks)
+  - [x] release.yaml (versioned releases)
+- [x] E2E test integration (PaymentClient, payment flows)
+
 ### Pending
 
-- [ ] Database migrations (Flyway/Liquibase)
-- [ ] Dockerfile for container build
-- [ ] Kubernetes manifests (Deployment, Service, ConfigMap)
-- [ ] NetworkPolicy for namespace isolation
-- [ ] Vault ExternalSecrets for gateway credentials
 - [ ] Unit tests
 - [ ] Integration tests with Testcontainers
-- [ ] GitHub Actions CI/CD workflow
-- [ ] E2E test integration (PaymentClient)
 
 ## Kubernetes Deployment Plan
 
