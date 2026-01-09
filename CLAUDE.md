@@ -159,10 +159,18 @@ Key configuration in `application.yml`:
   - [x] EncryptionServiceTest - AES-256-GCM encrypt/decrypt
   - [x] PaymentGatewayRouterTest - gateway routing
 - [x] Test configuration (application-test.yml)
+- [x] Integration tests with Testcontainers:
+  - [x] BaseIntegrationTest - PostgreSQL container setup
+  - [x] PaymentServiceIntegrationTest - persistence, idempotency
+  - [x] RefundServiceIntegrationTest - refund flows
+  - [x] PaymentControllerIntegrationTest - full API testing
+- [x] Integration test configuration (application-integration-test.yml)
+- [x] Makefile for test automation
+- [x] Test documentation (docs/testing/README.md)
 
 ### Pending
 
-- [ ] Integration tests with Testcontainers
+- [ ] Load/performance testing
 
 ## Kubernetes Deployment Plan
 
@@ -305,10 +313,22 @@ docker run -p 8084:8084 payment-service:latest
 
 ## Next Steps
 
-1. Create database migration scripts
-2. Create Dockerfile
-3. Add namespace to infrastructure repo
-4. Create Kubernetes manifests
-5. Configure Vault secrets
-6. Implement E2E test integration
-7. Set up CI/CD pipeline
+All core infrastructure and testing is complete:
+
+- [x] Create database migration scripts (Flyway V1__init_schema.sql)
+- [x] Create Dockerfile (multi-stage, JRE Alpine)
+- [x] Add namespace to infrastructure repo
+- [x] Create Kubernetes manifests (k8s/base/)
+- [x] Configure Vault secrets (ExternalSecrets)
+- [x] Implement E2E test integration
+- [x] Set up CI/CD pipeline (GitHub Actions)
+- [x] Create unit tests
+- [x] Create integration tests with Testcontainers
+- [x] Add Makefile for test automation
+- [x] Document testing (docs/testing/)
+
+Optional future enhancements:
+- [ ] Add load/performance tests
+- [ ] Add contract tests (Pact)
+- [ ] Add chaos engineering tests
+- [ ] Webhook handling for async payment updates
