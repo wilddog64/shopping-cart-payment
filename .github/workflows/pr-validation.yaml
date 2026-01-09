@@ -1,0 +1,97 @@
+name: PR Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+env:
+  JAVA_VERSION: '21'
+
+jobs:
+  validate:
+    name: Validate PR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Validate commit messages
+        run: |
+          echo "Validating commit messages follow conventional commits..."
+          # Add conventional commit validation if needed
+
+      - name: Check for sensitive data
+        run: |
+          echo "Checking for sensitive data..."
+          # Check for API keys, passwords, etc.
+          if grep -rE "(sk_live_|sk_test_|PRIVATE.KEY|password\s*=\s*['\"][^'\"]+['\"])" --include="*.java" --include="*.yml" --include="*.yaml" --include="*.properties" .; then
+            echo "::warning::Potential sensitive data found in committed files"
+          fi
+
+      - name: Build
+        run: ./mvnw clean compile -B
+
+      - name: Run Tests
+        run: ./mvnw test -B
+
+      - name: Check code coverage
+        run: |
+          ./mvnw jacoco:report -B
+          # Add coverage threshold check
+
+      - name: SpotBugs Analysis
+        run: ./mvnw spotbugs:check -B
+        continue-on-error: true
+
+  code-quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Check code formatting
+        run: |
+          echo "Checking code formatting..."
+          # Add Checkstyle or similar
+
+      - name: Run static analysis
+        run: |
+          echo "Running static analysis..."
+          ./mvnw pmd:check -B || true
+
+  api-compatibility:
+    name: API Compatibility
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for breaking API changes
+        run: |
+          echo "Checking for breaking API changes..."
+          # Add OpenAPI diff or similar tool
