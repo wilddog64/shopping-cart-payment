@@ -1,0 +1,112 @@
+spring:
+  application:
+    name: payment-service
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:payments}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:changeme123}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${OAUTH2_ISSUER_URI:http://keycloak.identity.svc.cluster.local/realms/shopping-cart}
+          jwk-set-uri: ${OAUTH2_JWK_SET_URI:http://keycloak.identity.svc.cluster.local/realms/shopping-cart/protocol/openid-connect/certs}
+
+server:
+  port: ${SERVER_PORT:8084}
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: when_authorized
+      probes:
+        enabled: true
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+# RabbitMQ Configuration
+rabbitmq:
+  host: ${RABBITMQ_HOST:rabbitmq.shopping-cart-data.svc.cluster.local}
+  port: ${RABBITMQ_PORT:5672}
+  vhost: ${RABBITMQ_VHOST:/}
+  username: ${RABBITMQ_USERNAME:guest}
+  password: ${RABBITMQ_PASSWORD:guest}
+  vault:
+    enabled: ${RABBITMQ_VAULT_ENABLED:false}
+    address: ${VAULT_ADDR:http://vault.vault.svc.cluster.local:8200}
+    role: ${VAULT_RABBITMQ_ROLE:payment-service}
+    mount-path: ${VAULT_RABBITMQ_PATH:rabbitmq}
+
+# Payment Gateway Configuration
+payment:
+  gateway:
+    default: ${PAYMENT_GATEWAY_DEFAULT:mock}
+
+    stripe:
+      enabled: ${STRIPE_ENABLED:true}
+      api-key: ${STRIPE_API_KEY:sk_test_xxx}
+      webhook-secret: ${STRIPE_WEBHOOK_SECRET:whsec_xxx}
+
+    paypal:
+      enabled: ${PAYPAL_ENABLED:true}
+      client-id: ${PAYPAL_CLIENT_ID:xxx}
+      client-secret: ${PAYPAL_CLIENT_SECRET:xxx}
+      mode: ${PAYPAL_MODE:sandbox}
+
+    mock:
+      enabled: true
+      delay-ms: ${MOCK_GATEWAY_DELAY_MS:500}
+      failure-rate: ${MOCK_GATEWAY_FAILURE_RATE:0.0}
+
+  # PCI Data Encryption
+  encryption:
+    enabled: ${ENCRYPTION_ENABLED:true}
+    key: ${ENCRYPTION_KEY:}
+    algorithm: AES/GCM/NoPadding
+
+# Rate Limiting
+rate-limit:
+  enabled: ${RATE_LIMIT_ENABLED:true}
+  requests-per-minute: ${RATE_LIMIT_PER_MINUTE:60}
+  requests-per-second: ${RATE_LIMIT_PER_SECOND:10}
+  burst-capacity: ${RATE_LIMIT_BURST:20}
+
+# Logging
+logging:
+  level:
+    root: INFO
+    com.shoppingcart.payment: ${LOG_LEVEL:INFO}
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
