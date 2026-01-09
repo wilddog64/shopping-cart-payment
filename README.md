@@ -136,17 +136,32 @@ payment:
 
 ## Testing
 
-### Unit Tests
+See [docs/testing/README.md](docs/testing/README.md) for the complete testing guide.
+
+### Quick Commands
 
 ```bash
-./mvnw test
+# Run all tests
+make test
+
+# Run unit tests only
+make test-unit
+
+# Run integration tests (requires Docker)
+make test-integration
+
+# Run tests with coverage
+make test-coverage
 ```
 
-### Integration Tests
+### Test Structure
 
-```bash
-./mvnw verify -P integration-tests
-```
+| Type | Location | Description |
+|------|----------|-------------|
+| Unit Tests | `src/test/java/.../service/` | Test components in isolation |
+| Controller Tests | `src/test/java/.../controller/` | Test REST endpoints with mocks |
+| Gateway Tests | `src/test/java/.../gateway/` | Test payment gateway logic |
+| Integration Tests | `src/test/java/.../integration/` | Test with real PostgreSQL (Testcontainers) |
 
 ### Test Cards (Mock Gateway)
 
