@@ -149,9 +149,19 @@ Key configuration in `application.yml`:
   - [x] release.yaml (versioned releases)
 - [x] E2E test integration (PaymentClient, payment flows)
 
+### Testing Completed
+
+- [x] Unit tests:
+  - [x] PaymentServiceTest - payment processing, idempotency
+  - [x] RefundServiceTest - full/partial refunds, validation
+  - [x] PaymentControllerTest - API endpoints, security
+  - [x] MockGatewayTest - test cards, tokenization
+  - [x] EncryptionServiceTest - AES-256-GCM encrypt/decrypt
+  - [x] PaymentGatewayRouterTest - gateway routing
+- [x] Test configuration (application-test.yml)
+
 ### Pending
 
-- [ ] Unit tests
 - [ ] Integration tests with Testcontainers
 
 ## Kubernetes Deployment Plan
