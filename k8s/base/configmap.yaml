@@ -1,0 +1,26 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: payment-service-config
+  namespace: shopping-cart-payment
+  labels:
+    app.kubernetes.io/name: payment-service
+    app.kubernetes.io/component: config
+    app.kubernetes.io/part-of: shopping-cart
+data:
+  # OAuth2 Configuration
+  oauth2.issuer-uri: "http://keycloak.identity.svc.cluster.local/realms/shopping-cart"
+  oauth2.jwk-set-uri: "http://keycloak.identity.svc.cluster.local/realms/shopping-cart/protocol/openid-connect/certs"
+
+  # Payment Gateway Configuration
+  payment.gateway.default: "mock"
+  stripe.enabled: "false"
+  paypal.enabled: "false"
+
+  # Rate Limiting
+  rate-limit.enabled: "true"
+  rate-limit.requests-per-minute: "60"
+
+  # Logging
+  log.level: "INFO"

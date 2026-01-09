@@ -1,0 +1,158 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-service
+  namespace: shopping-cart-payment
+  labels:
+    app.kubernetes.io/name: payment-service
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: shopping-cart
+    pci-scope: "true"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: payment-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: payment-service
+        app.kubernetes.io/component: backend
+        app.kubernetes.io/part-of: shopping-cart
+        pci-scope: "true"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8084"
+        prometheus.io/path: "/actuator/prometheus"
+    spec:
+      serviceAccountName: payment-service
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+      containers:
+      - name: payment-service
+        image: ghcr.io/your-org/payment-service:latest
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 8084
+          protocol: TCP
+        env:
+        - name: SERVER_PORT
+          value: "8084"
+        - name: DB_HOST
+          value: "postgresql-payment.shopping-cart-data.svc.cluster.local"
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_NAME
+          value: "payments"
+        - name: DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: payment-db-credentials
+              key: username
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: payment-db-credentials
+              key: password
+        - name: RABBITMQ_HOST
+          value: "rabbitmq.shopping-cart-data.svc.cluster.local"
+        - name: RABBITMQ_PORT
+          value: "5672"
+        - name: OAUTH2_ISSUER_URI
+          valueFrom:
+            configMapKeyRef:
+              name: payment-service-config
+              key: oauth2.issuer-uri
+        - name: OAUTH2_JWK_SET_URI
+          valueFrom:
+            configMapKeyRef:
+              name: payment-service-config
+              key: oauth2.jwk-set-uri
+        - name: PAYMENT_GATEWAY_DEFAULT
+          valueFrom:
+            configMapKeyRef:
+              name: payment-service-config
+              key: payment.gateway.default
+        - name: STRIPE_ENABLED
+          valueFrom:
+            configMapKeyRef:
+              name: payment-service-config
+              key: stripe.enabled
+        - name: STRIPE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: payment-gateway-secrets
+              key: stripe-api-key
+              optional: true
+        - name: PAYPAL_ENABLED
+          valueFrom:
+            configMapKeyRef:
+              name: payment-service-config
+              key: paypal.enabled
+        - name: PAYPAL_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: payment-gateway-secrets
+              key: paypal-client-id
+              optional: true
+        - name: PAYPAL_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: payment-gateway-secrets
+              key: paypal-client-secret
+              optional: true
+        - name: ENCRYPTION_KEY
+          valueFrom:
+            secretKeyRef:
+              name: payment-encryption-secret
+              key: encryption-key
+        - name: JAVA_OPTS
+          value: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
+        resources:
+          requests:
+            cpu: 200m
+            memory: 512Mi
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+        livenessProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8084
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8084
+          initialDelaySeconds: 30
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: payment-service
+              topologyKey: kubernetes.io/hostname
