@@ -1,0 +1,183 @@
+# Project Rules
+
+## Tech Stack
+
+- **Language**: Java 21
+- **Framework**: Spring Boot 3.2.0
+- **Database**: PostgreSQL with Flyway migrations (V1__init_schema.sql)
+- **Messaging**: RabbitMQ via `com.shoppingcart:rabbitmq-client:1.0.0` (with Vault integration)
+- **Payment Gateways**: Stripe (stripe-java 24.0.0), PayPal (checkout-sdk 1.14.0), Mock (built-in)
+- **Security**: Spring Security, OAuth2 Resource Server (JWT), AES-256-GCM encryption (Bouncy Castle 1.77)
+- **Rate Limiting**: Bucket4j 8.7.0 + Caffeine
+- **Metrics**: Micrometer + Prometheus via Spring Actuator
+- **Build**: Maven with Maven wrapper (`./mvnw`)
+- **Testing**: JUnit 5, Spring Boot Test, Mockito, Testcontainers (PostgreSQL + RabbitMQ), H2 (unit tests)
+- **Container**: Docker multi-stage build (JRE Alpine, non-root user)
+- **Orchestration**: Kubernetes with Kustomize (k8s/base/); NetworkPolicy for PCI isolation
+- **CI/CD**: GitHub Actions (ci.yaml, pr-validation.yaml, release.yaml)
+- **Secrets**: HashiCorp Vault via ExternalSecrets
+
+## Architecture
+
+```
+Controller → Service → GatewayRouter → Gateway (Stripe/PayPal/Mock)
+                ↓
+            Repository → PostgreSQL
+                ↓
+         (future: EventPublisher → RabbitMQ)
+```
+
+Package structure: `com.shoppingcart.payment.*`
+- `controller/` — `PaymentController`
+- `service/` — `PaymentService`, `RefundService`
+- `entity/` — `Payment`, `Refund`, `PaymentMethod`, `Transaction` + enums
+- `repository/` — `PaymentRepository`, `RefundRepository`, `PaymentMethodRepository`, `TransactionRepository`
+- `gateway/` — `PaymentGateway` interface, `PaymentGatewayRouter`, request/result DTOs, `stripe/`, `paypal/`, `mock/`
+- `security/` — `EncryptionService` (AES-256-GCM), `PciDataMasker`
+- `dto/` — `ProcessPaymentRequest`, `PaymentResponse`, `RefundRequest`
+
+## PCI DSS Compliance — Critical Rules
+
+**NEVER** store or log:
+- Full card numbers (PAN)
+- CVV/CVC codes
+- Full magnetic stripe data
+
+**ALWAYS**:
+- Store only tokenized payment method references or last 4 digits + brand
+- Encrypt sensitive data at rest using `EncryptionService` (AES-256-GCM)
+- Use `PciDataMasker` to sanitize all log output — never log raw payment data
+- Store gateway tokens, never raw card data, in `payment_methods` table
+- Use `cardholder_name_encrypted` and `billing_address_encrypted` columns (AES-256-GCM)
+
+## Code Conventions
+
+- Follow standard Java conventions
+- Use **Java records** for immutable DTOs
+- Use **Lombok** (`@Slf4j`, `@RequiredArgsConstructor`, `@Builder`) — Lombok excluded from final JAR
+- Prefer constructor injection; use `@RequiredArgsConstructor`
+- Add `@Transactional` to service methods that modify state
+- Use `BigDecimal` for all monetary amounts (never double/float)
+- Use `Instant` for timestamps (not LocalDateTime)
+- Format code: `./mvnw spotless:apply`
+- Check formatting: `./mvnw spotless:check`
+- Always use the Maven wrapper (`./mvnw`) not system `mvn`
+- Run `make test` via Makefile or `./mvnw test` directly
+- Database migrations go in `src/main/resources/db/migration/` as `V{n}__{description}.sql` (Flyway versioning)
+- `ddl-auto: validate` — Hibernate validates, Flyway manages schema
+
+## Testing
+
+- **Unit tests** (no `IntegrationTest` suffix): use H2 + mock gateways; `make test-unit`
+- **Integration tests** (`*IntegrationTest`): use Testcontainers PostgreSQL; Docker required; `make test-integration`
+- Base class `BaseIntegrationTest` sets up Testcontainers PostgreSQL; extend it for all integration tests
+- Test configuration in `src/test/resources/application-test.yml` (unit) and `application-integration-test.yml` (integration)
+- Use Mock Gateway in tests: test cards `4242...` (success), `4000...0002` (declined), `4000...9995` (insufficient funds)
+- Coverage report: `make test-coverage` → `target/site/jacoco/index.html`
+- Run specific test class: `make test-class CLASS=PaymentServiceTest`
+- Run test pattern: `make test-pattern PATTERN="Payment*"`
+
+## Build & Run
+
+```bash
+# Build (skip tests)
+make build          # ./mvnw clean package -DskipTests
+
+# Build with tests
+make build-with-tests
+
+# Run locally
+make run            # ./mvnw spring-boot:run
+
+# Run with local profile
+./mvnw spring-boot:run -Dspring-boot.run.profiles=local
+
+# All tests
+make test
+
+# Unit tests only
+make test-unit
+
+# Integration tests (requires Docker)
+make test-integration
+
+# Coverage
+make test-coverage
+
+# Format code
+make format
+
+# Check formatting
+./mvnw spotless:check
+
+# Lint
+make lint           # ./mvnw checkstyle:check
+
+# Build Docker image
+make docker-build
+
+# Database migrations
+make db-migrate     # ./mvnw flyway:migrate
+make db-info
+make db-repair
+
+# Deploy to Kubernetes
+kubectl apply -k k8s/base
+```
+
+Key environment variables (with defaults from application.yml):
+- `SERVER_PORT=8084`
+- `DB_HOST=localhost`, `DB_PORT=5432`, `DB_NAME=payments`, `DB_USERNAME=postgres`, `DB_PASSWORD=changeme123`
+- `RABBITMQ_HOST=rabbitmq.shopping-cart-data.svc.cluster.local`, `RABBITMQ_PORT=5672`
+- `RABBITMQ_VAULT_ENABLED=false`, `VAULT_ADDR=http://vault.vault.svc.cluster.local:8200`, `VAULT_RABBITMQ_ROLE=payment-service`
+- `PAYMENT_GATEWAY_DEFAULT=mock`
+- `STRIPE_ENABLED=true`, `STRIPE_API_KEY=sk_test_xxx`, `STRIPE_WEBHOOK_SECRET=whsec_xxx`
+- `PAYPAL_ENABLED=true`, `PAYPAL_CLIENT_ID=xxx`, `PAYPAL_CLIENT_SECRET=xxx`, `PAYPAL_MODE=sandbox`
+- `ENCRYPTION_ENABLED=true`, `ENCRYPTION_KEY=` (must be set for encryption to work)
+- `RATE_LIMIT_ENABLED=true`, `RATE_LIMIT_PER_MINUTE=60`, `RATE_LIMIT_PER_SECOND=10`, `RATE_LIMIT_BURST=20`
+- `OAUTH2_ISSUER_URI=http://keycloak.identity.svc.cluster.local/realms/shopping-cart`
+
+## Key Patterns
+
+### Payment Flow (idempotent)
+1. Check idempotency key — return existing payment if already processed
+2. Check order already paid — return existing if COMPLETED
+3. Create `Payment` record with PENDING status
+4. Route to gateway via `PaymentGatewayRouter`
+5. Execute gateway `processPayment()`
+6. Record `Transaction` (audit log)
+7. Update `Payment` to COMPLETED or FAILED
+8. Return payment to caller
+
+### Gateway Interface
+```java
+interface PaymentGateway {
+    String getName();
+    PaymentResult processPayment(PaymentRequest request);
+    RefundResult processRefund(RefundRequest request);
+    TokenizeResult tokenize(TokenizeRequest request);
+}
+```
+Implementations: `StripeGateway`, `PayPalGateway`, `MockGateway`
+
+### Gateway Routing
+`PaymentGatewayRouter.getGatewayOrDefault(gatewayName)` — falls back to configured default (`mock` in dev).
+
+### Roles
+- `PAYMENT_USER` — can process and view payments
+- `PAYMENT_ADMIN` — can also issue refunds
+- `PLATFORM_ADMIN` — full access
+
+### Kubernetes / PCI Isolation
+- Namespace: `shopping-cart-payment` (separate from `shopping-cart-apps`)
+- `NetworkPolicy` restricts: ingress from `shopping-cart-apps` only; egress to payment gateway APIs and `shopping-cart-data`
+- `HPA`: 2–10 replicas
+- Vault `ExternalSecrets`: `payment-db-secret`, `payment-gateway-secrets`, `payment-encryption-secret`
+- PCI DSS label `pci-scope: "true"` on namespace
+
+### Mock Gateway Test Cards
+| Card | Result |
+|------|--------|
+| 4242424242424242 | Success |
+| 4000000000000002 | Declined |
+| 4000000000009995 | Insufficient funds |
