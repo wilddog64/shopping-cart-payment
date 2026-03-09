@@ -198,7 +198,7 @@ jobs:
   publish:
     name: Build, Scan & Push
     needs: [build]
-    if: github.ref == refs/heads/main && github.event_name == push
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     uses: wilddog64/shopping-cart-infra/.github/workflows/build-push-deploy.yml@0a28d10
     with:
       service-name: shopping-cart-payment
