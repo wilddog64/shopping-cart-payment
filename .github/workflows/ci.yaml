@@ -195,3 +195,14 @@ jobs:
           # git commit -m "chore: update payment-service to ${{ github.sha }}"
           # git push
           echo "Would commit and push image tag update"
+  publish:
+    name: Build, Scan & Push
+    needs: [build]
+    if: github.ref == refs/heads/main && github.event_name == push
+    uses: wilddog64/shopping-cart-infra/.github/workflows/build-push-deploy.yml@0a28d10
+    with:
+      service-name: shopping-cart-payment
+      image-name: ghcr.io/wilddog64/shopping-cart-payment
+    permissions:
+      contents: write
+      packages: write
