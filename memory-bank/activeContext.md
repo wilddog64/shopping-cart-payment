@@ -47,6 +47,26 @@
 - [ ] **Load/performance testing** — explicitly called out as pending in CLAUDE.md
 - [ ] Optional future: contract tests (Pact), chaos engineering tests, webhook handling for async payment updates
 
+## CI Blocker — OPEN (2026-03-11)
+
+**Failing since:** 2026-03-09
+**Failing step:** `Build and Test` → `Build with Maven`
+
+**Error:**
+```
+Downloading Maven Wrapper...
+-Dmaven.multiModuleProjectDirectory system property is not set.
+##[error]Process completed with exit code 1.
+```
+
+**Root cause:** Maven wrapper (`mvnw`) fails to initialize — either `mvnw` binary or `.mvn/wrapper/maven-wrapper.properties` is missing/corrupt, or the system property needs explicit setting.
+
+**Fix:**
+1. Verify `mvnw` and `.mvn/wrapper/maven-wrapper.properties` are committed and not gitignored
+2. If present, add `-Dmaven.multiModuleProjectDirectory=.` to the Maven command in the CI workflow
+
+**Priority:** P2 — assigned to v0.8.0 milestone. See `k3d-manager/docs/issues/2026-03-11-shopping-cart-ci-failures.md`.
+
 ## Key Configuration to Note
 
 The `ENCRYPTION_KEY` environment variable must be set for `EncryptionService` to function. In Kubernetes, this comes from the `payment-encryption-secret` ExternalSecret backed by Vault path `secret/data/payment/encryption`.
