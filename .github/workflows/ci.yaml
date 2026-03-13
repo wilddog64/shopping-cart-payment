@@ -32,10 +32,10 @@ jobs:
           cache: maven
 
       - name: Build with Maven
-        run: ./mvnw clean package -DskipTests -B
+        run: ./mvnw clean package -DskipTests -B -Dmaven.multiModuleProjectDirectory=.
 
       - name: Run Unit Tests
-        run: ./mvnw test -B
+        run: ./mvnw test -B -Dmaven.multiModuleProjectDirectory=.
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
@@ -90,7 +90,7 @@ jobs:
           DB_USERNAME: postgres
           DB_PASSWORD: testpassword
           PAYMENT_GATEWAY_DEFAULT: mock
-        run: ./mvnw verify -P integration-tests -B
+        run: ./mvnw verify -P integration-tests -B -Dmaven.multiModuleProjectDirectory=.
 
   security-scan:
     name: Security Scan
