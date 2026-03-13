@@ -1,4 +1,22 @@
-# Active Context: Payment Service
+## CI Status (as of 2026-03-13)
+
+**Branch:** `fix/ci-stabilization` — PR #1 open
+
+| Job | Status |
+|---|---|
+| Build and Test | ❌ fail |
+
+**Failure:** Maven cannot resolve two artifacts:
+1. `com.shoppingcart:rabbitmq-client:1.0.0` — pom.xml declares `1.0.0` but GitHub Packages only has `1.0.0-SNAPSHOT`. Fix: change `rabbitmq-client.version` property to `1.0.0-SNAPSHOT`.
+2. Missing GitHub Packages repository declaration + `packages: read` permission on build job.
+
+**Round 3 fixes required (spec: `wilddog64/shopping-cart-infra` → `docs/plans/ci-stabilization-round3.md` @ c5797539):**
+- `pom.xml`: change `<rabbitmq-client.version>1.0.0</rabbitmq-client.version>` → `1.0.0-SNAPSHOT`
+- `pom.xml`: add GitHub Packages repository with snapshots enabled
+- `.github/maven-settings.xml`: create with `github-rabbitmq-client` server credentials
+- `.github/workflows/ci.yaml`: add `packages: read` permission + `-s .github/maven-settings.xml` to build step
+
+---# Active Context: Payment Service
 
 ## Current Status
 
