@@ -19,7 +19,7 @@
 
     <properties>
         <java.version>21</java.version>
-        <rabbitmq-client.version>1.0.0</rabbitmq-client.version>
+        <rabbitmq-client.version>1.0.0-SNAPSHOT</rabbitmq-client.version>
         <stripe.version>24.0.0</stripe.version>
         <paypal.version>1.14.0</paypal.version>
         <bucket4j.version>8.7.0</bucket4j.version>
@@ -156,6 +156,20 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>github-rabbitmq-client</id>
+            <name>GitHub Packages — rabbitmq-client-java</name>
+            <url>https://maven.pkg.github.com/wilddog64/rabbitmq-client-java</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
     <build>
         <plugins>

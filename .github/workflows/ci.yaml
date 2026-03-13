@@ -20,6 +20,9 @@ jobs:
   build:
     name: Build and Test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
 
     steps:
       - name: Checkout code
@@ -33,7 +36,9 @@ jobs:
           cache: maven
 
       - name: Build with Maven
-        run: ./mvnw clean package -DskipTests -B
+        run: ./mvnw clean package -DskipTests -B -s .github/maven-settings.xml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run Unit Tests
         run: ./mvnw test -B
