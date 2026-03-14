@@ -21,7 +21,7 @@ CI green. PR #1 merged to main. Branch protection active.
 
 ## Active Task
 
-- **P4 linter** — Checkstyle + SpotBugs. Spec: `wilddog64/shopping-cart-infra/docs/plans/p4-linter-payment.md`. Branch: `feature/p4-linter`. Not started — assigned to Codex after order.
+- **P4 linter** — Checkstyle + SpotBugs. Spec: `wilddog64/shopping-cart-infra/docs/plans/p4-linter-payment.md`. Branch: `feature/p4-linter`. Not started — assigned to Codex now.
 
 ## Agent Rules (Codex must follow)
 
@@ -30,6 +30,7 @@ CI green. PR #1 merged to main. Branch protection active.
 3. Do NOT update `memory-bank/activeContext.md` until `gh run list --repo wilddog64/shopping-cart-payment` shows `completed success`.
 4. Verify commit SHA with `gh api repos/wilddog64/shopping-cart-payment/commits/<sha>` before reporting.
 5. Open a PR when CI is green; do NOT merge it yourself.
+6. **OWASP / NVD**: add `<failOnError>false</failOnError>` to the dependency-check plugin config. Do NOT hardcode `DEMO_KEY` — use `${{ secrets.NVD_API_KEY }}` only (empty if secret absent). The DEMO_KEY is rejected by NVD and will fail the build.
 
 ## Key Notes
 
