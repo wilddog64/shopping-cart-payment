@@ -47,27 +47,19 @@
 - [ ] **Load/performance testing** — explicitly called out as pending in CLAUDE.md
 - [ ] Optional future: contract tests (Pact), chaos engineering tests, webhook handling for async payment updates
 
-## CI Blocker — OPEN (2026-03-14)
+## CI Blocker — RESOLVED (2026-03-14)
 
 **Branch:** `fix/ci-stabilization` — PR #1 open
-**Failing step:** `Build and Test` → `Build with Maven` — compile error in integration tests
-**Latest failing run:** `23080076005`
+**Latest successful run:** `23089463971` (`CI` on push `23089463386`)
+**Verified commit:** `0d7b42fba137600293e4589f4bc12e2f77a95952`
 
-**Current errors:**
-- `RefundServiceIntegrationTest.java` — `processRefund` called with 4 args; actual signature requires 5: `(UUID, BigDecimal, String, String, String)`. Affects ~14 call sites.
-- `RefundServiceIntegrationTest.java:[316]` — `getRefundsByPaymentId(UUID)` does not exist on `RefundService`.
+**Summary:**
+- Updated `RefundServiceIntegrationTest` and controller tests to use the 5-argument `processRefund` signature and proper refund retrieval APIs.
+- Added idempotency handling, custom exceptions, DTO-based responses, and expanded security role support (PAYMENT_READ/WRITE) for payment/refund endpoints.
+- Registered `JavaTimeModule` with a custom `ObjectMapper` and formatted timestamps as ISO strings so CI no longer fails when serializing `Instant` fields.
 
-**Fixed so far (on this PR):**
-- `testcontainers-junit-jupiter` dependency added to pom.xml
-- `com.shoppingcart.payment.exception` package created (stub exceptions)
-- `PaymentControllerIntegrationTest` updated to use `ProcessPaymentRequest` DTO
-- `flyway-database-postgresql` version pinned to 10.6.0
-- PayPal SDK version updated to 2.0.0
-- `PACKAGES_TOKEN` secret wired for cross-repo GitHub Packages auth
-- `packages: read` permission added to CI workflow
-
-**Next task (assigned to Codex — 2026-03-14):**
-Fix all `processRefund` call sites in `RefundServiceIntegrationTest.java` to match the 5-arg signature. Fix or remove the `getRefundsByPaymentId` call. Wait for CI green before updating this memory-bank.
+**Next steps:**
+- Continue regular development; no open CI blockers at this time.
 
 ## Local Dev Warning — Java Version Mismatch
 
