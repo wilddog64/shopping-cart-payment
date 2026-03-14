@@ -1,6 +1,8 @@
 package com.shoppingcart.payment.service;
 
 import com.shoppingcart.payment.entity.*;
+import com.shoppingcart.payment.exception.PaymentNotFoundException;
+import com.shoppingcart.payment.exception.RefundException;
 import com.shoppingcart.payment.gateway.*;
 import com.shoppingcart.payment.repository.PaymentRepository;
 import com.shoppingcart.payment.repository.RefundRepository;
@@ -38,20 +40,28 @@ public class RefundService {
 
         log.info("Processing refund for payment={}, amount={}", paymentId, amount);
 
+        if (correlationId != null) {
+            Optional<Refund> existing = refundRepository.findByCorrelationId(correlationId);
+            if (existing.isPresent()) {
+                log.info("Returning existing refund {} for correlationId={}", existing.get().getId(), correlationId);
+                return existing.get();
+            }
+        }
+
         Payment payment = paymentRepository.findById(paymentId)
-                .orElseThrow(() -> new IllegalArgumentException("Payment not found: " + paymentId));
+                .orElseThrow(() -> new PaymentNotFoundException("Payment not found: " + paymentId));
 
         // Validate payment status
         if (payment.getStatus() != PaymentStatus.COMPLETED &&
             payment.getStatus() != PaymentStatus.REFUND_PENDING) {
-            throw new IllegalStateException("Cannot refund payment with status: " + payment.getStatus());
+            throw new RefundException("Cannot refund payment with status: " + payment.getStatus());
         }
 
         // Validate amount
         BigDecimal totalRefunded = getTotalRefunded(paymentId);
         BigDecimal maxRefundable = payment.getAmount().subtract(totalRefunded);
         if (amount.compareTo(maxRefundable) > 0) {
-            throw new IllegalArgumentException(
+            throw new RefundException(
                     "Refund amount " + amount + " exceeds maximum refundable: " + maxRefundable);
         }
 

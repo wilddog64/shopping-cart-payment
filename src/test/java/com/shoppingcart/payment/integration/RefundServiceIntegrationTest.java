@@ -364,8 +364,8 @@ class RefundServiceIntegrationTest extends BaseIntegrationTest {
                     payment.getId(),
                     new BigDecimal("50.00"),
                     "Idempotent refund",
-                    idempotencyKey,
-                    null
+                    null,
+                    idempotencyKey
             );
 
             // Act - Second request with same idempotency key
@@ -373,8 +373,8 @@ class RefundServiceIntegrationTest extends BaseIntegrationTest {
                     payment.getId(),
                     new BigDecimal("50.00"),
                     "Idempotent refund",
-                    idempotencyKey,
-                    null
+                    null,
+                    idempotencyKey
             );
 
             // Assert

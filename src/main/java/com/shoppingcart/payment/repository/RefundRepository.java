@@ -19,4 +19,6 @@ public interface RefundRepository extends JpaRepository<Refund, UUID> {
     Optional<Refund> findByGatewayRefundId(String gatewayRefundId);
 
     long countByPaymentId(UUID paymentId);
+
+    Optional<Refund> findByCorrelationId(String correlationId);
 }

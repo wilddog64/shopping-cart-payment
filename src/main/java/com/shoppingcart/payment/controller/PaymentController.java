@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/payments")
+@RequestMapping("/api/v1/payments")
 @RequiredArgsConstructor
 @Slf4j
 public class PaymentController {
@@ -30,11 +30,14 @@ public class PaymentController {
     public ResponseEntity<PaymentResponse> processPayment(
             @Valid @RequestBody ProcessPaymentRequest request,
             @RequestHeader(value = "X-Correlation-ID", required = false) String correlationId,
-            @RequestHeader(value = "X-Idempotency-Key", required = false) String idempotencyKey) {
+            @RequestHeader(value = "X-Idempotency-Key", required = false) String idempotencyKey,
+            @RequestHeader(value = "Idempotency-Key", required = false) String legacyIdempotencyKey) {
 
         log.info("Processing payment request for order: {}", request.getOrderId());
 
-        String actualIdempotencyKey = idempotencyKey != null ? idempotencyKey : request.getIdempotencyKey();
+        String actualIdempotencyKey = idempotencyKey != null
+                ? idempotencyKey
+                : (legacyIdempotencyKey != null ? legacyIdempotencyKey : request.getIdempotencyKey());
 
         Payment payment = paymentService.processPayment(
                 request.getOrderId(),
@@ -85,8 +88,32 @@ public class PaymentController {
         return ResponseEntity.badRequest().build();
     }
 
+    @GetMapping("/order/{orderId}")
+    @PreAuthorize("hasAnyRole('PAYMENT_USER', 'PAYMENT_ADMIN', 'PLATFORM_ADMIN')")
+    public ResponseEntity<PaymentResponse> getPaymentByOrder(@PathVariable String orderId) {
+        return paymentService.getPaymentByOrderId(orderId)
+                .map(payment -> ResponseEntity.ok(PaymentResponse.from(payment)))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/customer/{customerId}")
+    @PreAuthorize("hasAnyRole('PAYMENT_USER', 'PAYMENT_ADMIN', 'PLATFORM_ADMIN')")
+    public ResponseEntity<List<PaymentResponse>> getPaymentsByCustomer(@PathVariable String customerId) {
+        List<PaymentResponse> payments = paymentService.getPaymentsByCustomer(customerId)
+                .stream()
+                .map(PaymentResponse::from)
+                .toList();
+        return ResponseEntity.ok(payments);
+    }
+
+    @GetMapping("/{paymentId}/refunds")
+    @PreAuthorize("hasAnyRole('PAYMENT_USER', 'PAYMENT_ADMIN', 'PLATFORM_ADMIN')")
+    public ResponseEntity<List<com.shoppingcart.payment.entity.Refund>> getRefundsForPayment(@PathVariable UUID paymentId) {
+        return ResponseEntity.ok(refundService.getRefundsByPayment(paymentId));
+    }
+
     @PostMapping("/{paymentId}/refund")
-    @PreAuthorize("hasAnyRole('PAYMENT_ADMIN', 'PLATFORM_ADMIN')")
+    @PreAuthorize("hasAnyRole('PAYMENT_WRITE', 'PAYMENT_ADMIN', 'PLATFORM_ADMIN')")
     public ResponseEntity<?> refundPayment(
             @PathVariable UUID paymentId,
             @Valid @RequestBody com.shoppingcart.payment.dto.RefundRequest request,
@@ -103,6 +130,6 @@ public class PaymentController {
                 correlationId
         );
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(refund);
+        return ResponseEntity.ok(refund);
     }
 }
