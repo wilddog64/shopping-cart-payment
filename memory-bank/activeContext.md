@@ -2,40 +2,39 @@
 
 ## Current Status (2026-03-14)
 
-CI green. PR #1 merged to main. Branch protection active.
+CI green. All PRs merged to main. Branch protection active.
 
 ## What's Implemented
 
 - Payment processing with idempotency, PENDING→PROCESSING→COMPLETED/FAILED state machine
-- Refund processing: full/partial refunds, RefundService with 5-arg `processRefund(UUID, BigDecimal, String, String, String)`
+- Refund processing: full/partial refunds, RefundService 5-arg `processRefund`
 - Gateways: MockGateway, StripeGateway, PayPalGateway
-- Security: AES-256-GCM encryption, PCI log masking, OAuth2/JWT (Keycloak), Bucket4j rate limiting
-- Flyway migration V1__init_schema.sql, 4 tables
-- Integration tests: Testcontainers, PaymentServiceIntegrationTest, RefundServiceIntegrationTest, PaymentControllerIntegrationTest
-- Dockerfile multi-stage, k8s/base manifests, GitHub Actions ci.yaml
+- Security: AES-256-GCM encryption (UTF-8 explicit), PCI log masking, OAuth2/JWT, Bucket4j rate limiting
+- Flyway migrations V1 + V2, 4 tables
+- GitHub Actions CI: Checkstyle + SpotBugs gate + build/test + integration tests + ghcr.io push
 
 ## CI History
 
-- **fix/ci-stabilization PR #1** — merged 2026-03-14. Fixed: mvnw multiModuleProjectDirectory, testcontainers dep, exception stubs, processRefund signature, flyway version, PayPal SDK version, PACKAGES_TOKEN auth.
+- **fix/ci-stabilization PR #1** — merged 2026-03-14. Fixed: mvnw, testcontainers, processRefund signature, flyway, PayPal SDK, PACKAGES_TOKEN.
+- **feature/p4-linter PR #2** — merged 2026-03-14. Added Checkstyle + SpotBugs; fixed DM_DEFAULT_ENCODING in EncryptionService; ST_WRITE_TO_STATIC suppressed via spotbugs-exclude.xml.
 - **Branch protection** — 1 review + CI required, enforce_admins: false
 
 ## Active Task
 
-- **P4 linter** — Checkstyle + SpotBugs. Branch `feature/p4-linter`, PR #2 open; CI run `23098132727` green on HEAD `f9862ae8`. Copilot tagged. Ready to merge.
-  - Fixed: SpotBugs `DM_DEFAULT_ENCODING` in EncryptionService (added `StandardCharsets.UTF_8`); `ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD` in StripeGateway suppressed via `spotbugs-exclude.xml` (Stripe SDK pattern).
-  - Checkstyle thresholds: MethodLength 120, ParameterNumber 8 (adjusted for existing code).
+- **v0.1.0 release** — cut `release/v0.1.0` from main, add CHANGELOG, open PR, tag after merge.
 
-## Agent Rules (Codex must follow)
+## Agent Instructions
 
-1. Read the spec at `wilddog64/shopping-cart-infra/docs/plans/p4-linter-payment.md` before touching any code.
-2. Use CI to verify — do NOT run `mvn` locally (local Java 25 vs pom Java 21 causes timeouts).
-3. Do NOT update `memory-bank/activeContext.md` until `gh run list --repo wilddog64/shopping-cart-payment` shows `completed success`.
-4. Verify commit SHA with `gh api repos/wilddog64/shopping-cart-payment/commits/<sha>` before reporting.
-5. Open a PR when CI is green; do NOT merge it yourself.
-6. **OWASP / NVD**: add `<failOnError>false</failOnError>` to the dependency-check plugin config. Do NOT hardcode `DEMO_KEY` — use `${{ secrets.NVD_API_KEY }}` only (empty if secret absent). The DEMO_KEY is rejected by NVD and will fail the build.
+Rules that apply to ALL agents working in this repo:
+
+1. **CI only** — do NOT run `mvn` locally (local Java 25 vs pom Java 21).
+2. **Memory-bank discipline** — do NOT update until CI shows `completed success`.
+3. **SHA verification** — verify commit SHA before reporting.
+4. **Do NOT merge PRs** — open the PR and stop.
+5. **No unsolicited changes** — only touch files in the task spec.
 
 ## Key Notes
 
-- Local Java 25 vs pom Java 21 — do NOT run `mvn verify` locally. Use CI.
-- `ENCRYPTION_KEY` required for EncryptionService — set `ENCRYPTION_ENABLED=false` for local dev without Vault
+- Local Java 25 vs pom Java 21 — use CI only
+- `ENCRYPTION_KEY` required — set `ENCRYPTION_ENABLED=false` for local dev
 - `PAYMENT_GATEWAY_DEFAULT=mock` — no real gateway credentials needed for tests
