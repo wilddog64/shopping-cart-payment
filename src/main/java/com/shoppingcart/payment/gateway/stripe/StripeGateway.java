@@ -39,7 +39,7 @@ public class StripeGateway implements PaymentGateway {
     @PostConstruct
     public void init() {
         if (enabled && apiKey != null && !apiKey.isEmpty()) {
-            Stripe.apiKey = apiKey;
+            Stripe.apiKey = apiKey; // Stripe SDK requires global static key initialization
             log.info("StripeGateway initialized");
         }
     }

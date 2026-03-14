@@ -21,7 +21,9 @@ CI green. PR #1 merged to main. Branch protection active.
 
 ## Active Task
 
-- **P4 linter** — Checkstyle + SpotBugs. Spec: `wilddog64/shopping-cart-infra/docs/plans/p4-linter-payment.md`. Branch: `feature/p4-linter`. Not started — assigned to Codex now.
+- **P4 linter** — Checkstyle + SpotBugs. Branch `feature/p4-linter`, PR #2 open; CI run `23098132727` green on HEAD `f9862ae8`. Copilot tagged. Ready to merge.
+  - Fixed: SpotBugs `DM_DEFAULT_ENCODING` in EncryptionService (added `StandardCharsets.UTF_8`); `ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD` in StripeGateway suppressed via `spotbugs-exclude.xml` (Stripe SDK pattern).
+  - Checkstyle thresholds: MethodLength 120, ParameterNumber 8 (adjusted for existing code).
 
 ## Agent Rules (Codex must follow)
 

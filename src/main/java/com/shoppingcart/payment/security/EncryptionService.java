@@ -10,6 +10,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.Base64;
 
@@ -70,7 +71,7 @@ public class EncryptionService {
             GCMParameterSpec parameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
             cipher.init(Cipher.ENCRYPT_MODE, secretKey, parameterSpec);
 
-            byte[] ciphertext = cipher.doFinal(plaintext.getBytes());
+            byte[] ciphertext = cipher.doFinal(plaintext.getBytes(StandardCharsets.UTF_8));
 
             // Prepend IV to ciphertext
             ByteBuffer byteBuffer = ByteBuffer.allocate(iv.length + ciphertext.length);
@@ -113,7 +114,7 @@ public class EncryptionService {
 
             byte[] decryptedBytes = cipher.doFinal(encryptedBytes);
 
-            return new String(decryptedBytes);
+            return new String(decryptedBytes, StandardCharsets.UTF_8);
 
         } catch (Exception e) {
             log.error("Decryption failed", e);

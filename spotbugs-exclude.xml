@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+  <!-- Stripe SDK requires setting global static apiKey from instance @PostConstruct init -->
+  <Match>
+    <Class name="com.shoppingcart.payment.gateway.stripe.StripeGateway"/>
+    <Bug pattern="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD"/>
+  </Match>
+</FindBugsFilter>

@@ -332,3 +332,14 @@ Optional future enhancements:
 - [ ] Add contract tests (Pact)
 - [ ] Add chaos engineering tests
 - [ ] Webhook handling for async payment updates
+
+## Agent Instructions
+
+Rules that apply to ALL agents (Codex, Claude, Gemini) working in this repo:
+
+1. **CI only** — do NOT run `./mvnw` or `mvn` locally. Local Java is 25; pom requires Java 21. This causes Testcontainers timeouts. Use `gh run list` to verify.
+2. **Memory-bank discipline** — do NOT update `memory-bank/activeContext.md` until `gh run list --repo wilddog64/shopping-cart-payment` shows `completed success`.
+3. **SHA verification** — always verify commit SHA with `gh api repos/wilddog64/shopping-cart-payment/commits/<sha>` before reporting.
+4. **Do NOT merge PRs** — open the PR and stop. The repo owner merges.
+5. **No unsolicited changes** — only touch files listed in the task spec. Do not refactor, reformat, or "clean up" other files.
+6. **Checkstyle/SpotBugs violations** — if the linter fails on existing code, report the violations and stop. Do NOT fix source code unless explicitly asked.
