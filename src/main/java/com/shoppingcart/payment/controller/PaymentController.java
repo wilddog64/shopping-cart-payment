@@ -64,7 +64,7 @@ public class PaymentController {
     }
 
     @GetMapping("/{paymentId}")
-    @PreAuthorize("hasAnyRole('PAYMENT_USER', 'PAYMENT_ADMIN', 'PLATFORM_ADMIN')")
+    @PreAuthorize("hasAnyRole('PAYMENT_USER', 'PAYMENT_READ', 'PAYMENT_ADMIN', 'PLATFORM_ADMIN')")
     public ResponseEntity<PaymentResponse> getPayment(@PathVariable UUID paymentId) {
         return paymentService.getPayment(paymentId)
                 .map(payment -> ResponseEntity.ok(PaymentResponse.from(payment)))
@@ -72,7 +72,7 @@ public class PaymentController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('PAYMENT_USER', 'PAYMENT_ADMIN', 'PLATFORM_ADMIN')")
+    @PreAuthorize("hasAnyRole('PAYMENT_USER', 'PAYMENT_READ', 'PAYMENT_ADMIN', 'PLATFORM_ADMIN')")
     public ResponseEntity<List<PaymentResponse>> getPayments(
             @RequestParam(required = false) String orderId,
             @RequestParam(required = false) String customerId) {
@@ -95,7 +95,7 @@ public class PaymentController {
     }
 
     @GetMapping("/order/{orderId}")
-    @PreAuthorize("hasAnyRole('PAYMENT_USER', 'PAYMENT_ADMIN', 'PLATFORM_ADMIN')")
+    @PreAuthorize("hasAnyRole('PAYMENT_USER', 'PAYMENT_READ', 'PAYMENT_ADMIN', 'PLATFORM_ADMIN')")
     public ResponseEntity<PaymentResponse> getPaymentByOrder(@PathVariable String orderId) {
         return paymentService.getPaymentByOrderId(orderId)
                 .map(payment -> ResponseEntity.ok(PaymentResponse.from(payment)))
@@ -103,7 +103,7 @@ public class PaymentController {
     }
 
     @GetMapping("/customer/{customerId}")
-    @PreAuthorize("hasAnyRole('PAYMENT_USER', 'PAYMENT_ADMIN', 'PLATFORM_ADMIN')")
+    @PreAuthorize("hasAnyRole('PAYMENT_USER', 'PAYMENT_READ', 'PAYMENT_ADMIN', 'PLATFORM_ADMIN')")
     public ResponseEntity<List<PaymentResponse>> getPaymentsByCustomer(@PathVariable String customerId) {
         List<PaymentResponse> payments = paymentService.getPaymentsByCustomer(customerId)
                 .stream()
@@ -113,7 +113,7 @@ public class PaymentController {
     }
 
     @GetMapping("/{paymentId}/refunds")
-    @PreAuthorize("hasAnyRole('PAYMENT_USER', 'PAYMENT_ADMIN', 'PLATFORM_ADMIN')")
+    @PreAuthorize("hasAnyRole('PAYMENT_USER', 'PAYMENT_READ', 'PAYMENT_ADMIN', 'PLATFORM_ADMIN')")
     public ResponseEntity<List<RefundResponse>> getRefundsForPayment(@PathVariable UUID paymentId) {
         List<RefundResponse> refunds = refundService.getRefundsByPayment(paymentId)
                 .stream()
