@@ -1,7 +1,7 @@
 package com.shoppingcart.payment.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.shoppingcart.payment.dto.PaymentRequest;
+import com.shoppingcart.payment.dto.ProcessPaymentRequest;
 import com.shoppingcart.payment.dto.RefundRequest;
 import com.shoppingcart.payment.entity.Payment;
 import com.shoppingcart.payment.entity.PaymentStatus;
@@ -63,7 +63,7 @@ class PaymentControllerIntegrationTest extends BaseIntegrationTest {
         @DisplayName("should create payment and return 201")
         void shouldCreatePaymentAndReturn201() throws Exception {
             // Arrange
-            PaymentRequest request = createPaymentRequest();
+            ProcessPaymentRequest request = createPaymentRequest();
 
             // Act & Assert
             mockMvc.perform(post(BASE_URL)
@@ -82,7 +82,7 @@ class PaymentControllerIntegrationTest extends BaseIntegrationTest {
         @DisplayName("should persist payment to database")
         void shouldPersistPaymentToDatabase() throws Exception {
             // Arrange
-            PaymentRequest request = createPaymentRequest();
+            ProcessPaymentRequest request = createPaymentRequest();
 
             // Act
             MvcResult result = mockMvc.perform(post(BASE_URL)
@@ -104,7 +104,7 @@ class PaymentControllerIntegrationTest extends BaseIntegrationTest {
         @DisplayName("should return 400 for invalid request")
         void shouldReturn400ForInvalidRequest() throws Exception {
             // Arrange - Missing required fields
-            PaymentRequest request = new PaymentRequest();
+            ProcessPaymentRequest request = new ProcessPaymentRequest();
 
             // Act & Assert
             mockMvc.perform(post(BASE_URL)
@@ -117,7 +117,7 @@ class PaymentControllerIntegrationTest extends BaseIntegrationTest {
         @DisplayName("should return 400 for negative amount")
         void shouldReturn400ForNegativeAmount() throws Exception {
             // Arrange
-            PaymentRequest request = createPaymentRequest();
+            ProcessPaymentRequest request = createPaymentRequest();
             request.setAmount(new BigDecimal("-10.00"));
 
             // Act & Assert
@@ -131,7 +131,7 @@ class PaymentControllerIntegrationTest extends BaseIntegrationTest {
         @DisplayName("should handle idempotency key")
         void shouldHandleIdempotencyKey() throws Exception {
             // Arrange
-            PaymentRequest request = createPaymentRequest();
+            ProcessPaymentRequest request = createPaymentRequest();
             String idempotencyKey = "idem-" + UUID.randomUUID();
 
             // Act - First request
@@ -389,7 +389,7 @@ class PaymentControllerIntegrationTest extends BaseIntegrationTest {
         @DisplayName("should accept and use correlation ID header")
         void shouldAcceptAndUseCorrelationIdHeader() throws Exception {
             // Arrange
-            PaymentRequest request = createPaymentRequest();
+            ProcessPaymentRequest request = createPaymentRequest();
             String correlationId = "corr-" + UUID.randomUUID();
 
             // Act & Assert
@@ -403,8 +403,8 @@ class PaymentControllerIntegrationTest extends BaseIntegrationTest {
     }
 
     // Helper methods
-    private PaymentRequest createPaymentRequest() {
-        PaymentRequest request = new PaymentRequest();
+    private ProcessPaymentRequest createPaymentRequest() {
+        ProcessPaymentRequest request = new ProcessPaymentRequest();
         request.setOrderId(ORDER_ID_PREFIX + UUID.randomUUID());
         request.setCustomerId(CUSTOMER_ID);
         request.setAmount(new BigDecimal("99.99"));
