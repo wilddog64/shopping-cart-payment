@@ -22,8 +22,8 @@ public class PaymentResponse {
     private String cardLast4;
     private String cardBrand;
     private String failureReason;
-    private Instant createdAt;
-    private Instant completedAt;
+    private String createdAt;
+    private String completedAt;
 
     public static PaymentResponse from(Payment payment) {
         return PaymentResponse.builder()
@@ -37,8 +37,12 @@ public class PaymentResponse {
                 .cardLast4(payment.getCardLast4())
                 .cardBrand(payment.getCardBrand())
                 .failureReason(payment.getFailureReason())
-                .createdAt(payment.getCreatedAt())
-                .completedAt(payment.getCompletedAt())
+                .createdAt(formatInstant(payment.getCreatedAt()))
+                .completedAt(formatInstant(payment.getCompletedAt()))
                 .build();
+    }
+
+    private static String formatInstant(Instant instant) {
+        return instant != null ? instant.toString() : null;
     }
 }
