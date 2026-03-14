@@ -17,8 +17,36 @@ env:
   MAVEN_OPTS: -Dmaven.multiModuleProjectDirectory=${{ github.workspace }}
 
 jobs:
+  lint:
+    name: Checkstyle & SpotBugs
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run Checkstyle
+        run: ./mvnw -B checkstyle:check -s .github/maven-settings.xml
+        env:
+          PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
+
+      - name: Run SpotBugs
+        run: ./mvnw -B spotbugs:check -DskipTests -s .github/maven-settings.xml
+        env:
+          PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
+
   build:
     name: Build and Test
+    needs: [lint]
     runs-on: ubuntu-latest
     permissions:
       contents: read
