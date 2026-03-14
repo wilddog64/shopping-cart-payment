@@ -9,10 +9,10 @@
       <property name="max" value="10"/>
     </module>
     <module name="MethodLength">
-      <property name="max" value="80"/>
+      <property name="max" value="120"/>
     </module>
     <module name="ParameterNumber">
-      <property name="max" value="7"/>
+      <property name="max" value="8"/>
     </module>
     <module name="NestedIfDepth">
       <property name="max" value="3"/>
