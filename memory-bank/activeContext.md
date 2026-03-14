@@ -21,7 +21,15 @@ CI green. PR #1 merged to main. Branch protection active.
 
 ## Active Task
 
-- **P4 linter** — Checkstyle + SpotBugs. Spec: `wilddog64/shopping-cart-infra/docs/plans/p4-linter-payment.md`. Branch: `feature/p4-linter`. Not started.
+- **P4 linter** — Checkstyle + SpotBugs. Spec: `wilddog64/shopping-cart-infra/docs/plans/p4-linter-payment.md`. Branch: `feature/p4-linter`. Not started — assigned to Codex after order.
+
+## Agent Rules (Codex must follow)
+
+1. Read the spec at `wilddog64/shopping-cart-infra/docs/plans/p4-linter-payment.md` before touching any code.
+2. Use CI to verify — do NOT run `mvn` locally (local Java 25 vs pom Java 21 causes timeouts).
+3. Do NOT update `memory-bank/activeContext.md` until `gh run list --repo wilddog64/shopping-cart-payment` shows `completed success`.
+4. Verify commit SHA with `gh api repos/wilddog64/shopping-cart-payment/commits/<sha>` before reporting.
+5. Open a PR when CI is green; do NOT merge it yourself.
 
 ## Key Notes
 
