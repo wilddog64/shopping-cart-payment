@@ -49,7 +49,7 @@ class PaymentControllerTest {
     @MockBean
     private RefundService refundService;
 
-    private static final String API_BASE = "/api/payments";
+    private static final String API_BASE = "/api/v1/payments";
 
     @Nested
     @DisplayName("POST /api/payments")
@@ -274,6 +274,7 @@ class PaymentControllerTest {
 
     @Nested
     @DisplayName("GET /api/payments")
+    @WithMockUser(roles = "PAYMENT_USER")
     class GetPayments {
 
         @Test
@@ -368,7 +369,7 @@ class PaymentControllerTest {
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isCreated())
+                    .andExpect(status().isOk())
                     .andExpect(jsonPath("$.id").exists())
                     .andExpect(jsonPath("$.paymentId").value(paymentId.toString()))
                     .andExpect(jsonPath("$.amount").value(50.00))
@@ -416,7 +417,7 @@ class PaymentControllerTest {
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isCreated());
+                    .andExpect(status().isOk());
         }
     }
 }

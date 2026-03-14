@@ -4,6 +4,8 @@ import com.shoppingcart.payment.entity.Payment;
 import com.shoppingcart.payment.entity.PaymentStatus;
 import com.shoppingcart.payment.entity.Refund;
 import com.shoppingcart.payment.entity.RefundStatus;
+import com.shoppingcart.payment.exception.PaymentNotFoundException;
+import com.shoppingcart.payment.exception.RefundException;
 import com.shoppingcart.payment.gateway.*;
 import com.shoppingcart.payment.repository.PaymentRepository;
 import com.shoppingcart.payment.repository.RefundRepository;
@@ -185,7 +187,7 @@ class RefundServiceTest {
             assertThatThrownBy(() -> refundService.processRefund(
                     nonExistentId, new BigDecimal("50.00"), "reason", "admin", null
             ))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(PaymentNotFoundException.class)
                     .hasMessageContaining("Payment not found");
         }
 
@@ -204,7 +206,7 @@ class RefundServiceTest {
             assertThatThrownBy(() -> refundService.processRefund(
                     paymentId, new BigDecimal("50.00"), "reason", "admin", null
             ))
-                    .isInstanceOf(IllegalStateException.class)
+                    .isInstanceOf(RefundException.class)
                     .hasMessageContaining("Cannot refund payment with status");
         }
 
@@ -226,7 +228,7 @@ class RefundServiceTest {
             assertThatThrownBy(() -> refundService.processRefund(
                     paymentId, new BigDecimal("30.00"), "Too much", "admin", null
             ))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(RefundException.class)
                     .hasMessageContaining("exceeds maximum refundable");
         }
 

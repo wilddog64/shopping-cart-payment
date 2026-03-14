@@ -2,6 +2,10 @@ spring:
   application:
     name: payment-service-integration-test
 
+  cloud:
+    vault:
+      enabled: false
+
   jpa:
     hibernate:
       ddl-auto: validate

@@ -69,25 +69,29 @@ Fix options:
 - [ ] **Load/performance testing** — explicitly called out as pending in CLAUDE.md
 - [ ] Optional future: contract tests (Pact), chaos engineering tests, webhook handling for async payment updates
 
-## CI Blocker — OPEN (2026-03-11)
+## CI Blocker — RESOLVED (2026-03-14)
 
-**Failing since:** 2026-03-09
-**Failing step:** `Build and Test` → `Build with Maven`
+**Branch:** `fix/ci-stabilization` — PR #1 open
+**Latest successful run:** `23089463971` (`CI` on push `23089463386`)
+**Verified commit:** `0d7b42fba137600293e4589f4bc12e2f77a95952`
 
-**Error:**
-```
-Downloading Maven Wrapper...
--Dmaven.multiModuleProjectDirectory system property is not set.
-##[error]Process completed with exit code 1.
-```
+**Summary:**
+- Updated `RefundServiceIntegrationTest` and controller tests to use the 5-argument `processRefund` signature and proper refund retrieval APIs.
+- Added idempotency handling, custom exceptions, DTO-based responses, and expanded security role support (PAYMENT_READ/WRITE) for payment/refund endpoints.
+- Registered `JavaTimeModule` with a custom `ObjectMapper` and formatted timestamps as ISO strings so CI no longer fails when serializing `Instant` fields.
 
-**Root cause:** Maven wrapper (`mvnw`) fails to initialize — either `mvnw` binary or `.mvn/wrapper/maven-wrapper.properties` is missing/corrupt, or the system property needs explicit setting.
+**Next steps:**
+- Continue regular development; no open CI blockers at this time.
 
-**Fix:**
-1. Verify `mvnw` and `.mvn/wrapper/maven-wrapper.properties` are committed and not gitignored
-2. If present, add `-Dmaven.multiModuleProjectDirectory=.` to the Maven command in the CI workflow
+## Local Dev Warning — Java Version Mismatch
 
-**Priority:** P2 — assigned to v0.8.0 milestone. See `k3d-manager/docs/issues/2026-03-11-shopping-cart-ci-failures.md`.
+Local machine has **OpenJDK 25** but pom.xml targets **Java 21**. Running `mvn verify`
+locally may hang or timeout due to Testcontainers + module-system issues on JVM 25.
+
+**CI is NOT affected** — GitHub Actions pins `JAVA_VERSION: '21'`.
+
+**Codex workaround:** skip local `mvn verify`. Push fixes → monitor CI instead.
+Full details: `docs/issues/2026-03-14-local-java-version-mismatch.md`
 
 ## Key Configuration to Note
 

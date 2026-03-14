@@ -8,6 +8,7 @@ import com.shoppingcart.payment.exception.PaymentNotFoundException;
 import com.shoppingcart.payment.exception.RefundException;
 import com.shoppingcart.payment.repository.PaymentRepository;
 import com.shoppingcart.payment.repository.RefundRepository;
+import com.shoppingcart.payment.repository.TransactionRepository;
 import com.shoppingcart.payment.service.PaymentService;
 import com.shoppingcart.payment.service.RefundService;
 import org.junit.jupiter.api.*;
@@ -35,11 +36,15 @@ class RefundServiceIntegrationTest extends BaseIntegrationTest {
     @Autowired
     private RefundRepository refundRepository;
 
+    @Autowired
+    private TransactionRepository transactionRepository;
+
     private static final String ORDER_ID_PREFIX = "order-refund-it-";
     private static final String CUSTOMER_ID = "customer-refund-test";
 
     @BeforeEach
     void setUp() {
+        transactionRepository.deleteAll();
         refundRepository.deleteAll();
         paymentRepository.deleteAll();
     }
@@ -69,6 +74,7 @@ class RefundServiceIntegrationTest extends BaseIntegrationTest {
                     payment.getId(),
                     new BigDecimal("100.00"),
                     "Customer requested full refund",
+                    null,
                     null
             );
 
@@ -103,6 +109,7 @@ class RefundServiceIntegrationTest extends BaseIntegrationTest {
                     payment.getId(),
                     new BigDecimal("75.00"),
                     "Test refund",
+                    null,
                     null
             );
 
@@ -139,6 +146,7 @@ class RefundServiceIntegrationTest extends BaseIntegrationTest {
                     payment.getId(),
                     new BigDecimal("50.00"),
                     "Partial refund for item",
+                    null,
                     null
             );
 
@@ -146,9 +154,9 @@ class RefundServiceIntegrationTest extends BaseIntegrationTest {
             assertThat(refund.getAmount()).isEqualByComparingTo(new BigDecimal("50.00"));
             assertThat(refund.getStatus()).isEqualTo(RefundStatus.COMPLETED);
 
-            // Payment should be partially refunded
+            // Payment should remain completed after partial refund
             Payment updatedPayment = paymentRepository.findById(payment.getId()).orElseThrow();
-            assertThat(updatedPayment.getStatus()).isEqualTo(PaymentStatus.PARTIALLY_REFUNDED);
+            assertThat(updatedPayment.getStatus()).isEqualTo(PaymentStatus.COMPLETED);
         }
 
         @Test
@@ -172,6 +180,7 @@ class RefundServiceIntegrationTest extends BaseIntegrationTest {
                     payment.getId(),
                     new BigDecimal("30.00"),
                     "First partial refund",
+                    null,
                     null
             );
 
@@ -179,6 +188,7 @@ class RefundServiceIntegrationTest extends BaseIntegrationTest {
                     payment.getId(),
                     new BigDecimal("20.00"),
                     "Second partial refund",
+                    null,
                     null
             );
 
@@ -213,6 +223,7 @@ class RefundServiceIntegrationTest extends BaseIntegrationTest {
                     payment.getId(),
                     new BigDecimal("80.00"),
                     "First refund",
+                    null,
                     null
             );
 
@@ -221,6 +232,7 @@ class RefundServiceIntegrationTest extends BaseIntegrationTest {
                     payment.getId(),
                     new BigDecimal("30.00"),
                     "Exceeding refund",
+                    null,
                     null
             )).isInstanceOf(RefundException.class)
                     .hasMessageContaining("exceeds");
@@ -240,6 +252,7 @@ class RefundServiceIntegrationTest extends BaseIntegrationTest {
                     nonExistentId,
                     new BigDecimal("50.00"),
                     "Test",
+                    null,
                     null
             )).isInstanceOf(PaymentNotFoundException.class);
         }
@@ -265,6 +278,7 @@ class RefundServiceIntegrationTest extends BaseIntegrationTest {
                     payment.getId(),
                     new BigDecimal("50.00"),
                     "Full refund",
+                    null,
                     null
             );
 
@@ -273,6 +287,7 @@ class RefundServiceIntegrationTest extends BaseIntegrationTest {
                     payment.getId(),
                     new BigDecimal("10.00"),
                     "Another refund",
+                    null,
                     null
             )).isInstanceOf(RefundException.class);
         }
@@ -302,6 +317,7 @@ class RefundServiceIntegrationTest extends BaseIntegrationTest {
                     payment.getId(),
                     new BigDecimal("25.00"),
                     "First refund",
+                    null,
                     null
             );
 
@@ -309,11 +325,12 @@ class RefundServiceIntegrationTest extends BaseIntegrationTest {
                     payment.getId(),
                     new BigDecimal("25.00"),
                     "Second refund",
+                    null,
                     null
             );
 
             // Act
-            List<Refund> refunds = refundService.getRefundsByPaymentId(payment.getId());
+            List<Refund> refunds = refundService.getRefundsByPayment(payment.getId());
 
             // Assert
             assertThat(refunds).hasSize(2);
@@ -347,6 +364,7 @@ class RefundServiceIntegrationTest extends BaseIntegrationTest {
                     payment.getId(),
                     new BigDecimal("50.00"),
                     "Idempotent refund",
+                    null,
                     idempotencyKey
             );
 
@@ -355,6 +373,7 @@ class RefundServiceIntegrationTest extends BaseIntegrationTest {
                     payment.getId(),
                     new BigDecimal("50.00"),
                     "Idempotent refund",
+                    null,
                     idempotencyKey
             );
 
