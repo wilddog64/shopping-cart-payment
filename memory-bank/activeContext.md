@@ -47,25 +47,27 @@
 - [ ] **Load/performance testing** — explicitly called out as pending in CLAUDE.md
 - [ ] Optional future: contract tests (Pact), chaos engineering tests, webhook handling for async payment updates
 
-## CI Blocker — OPEN (2026-03-11)
+## CI Blocker — OPEN (2026-03-14)
 
-**Failing since:** 2026-03-09
-**Failing step:** `Build and Test` → `Build with Maven`
+**Branch:** `fix/ci-stabilization` — PR #1 open
+**Failing step:** `Build and Test` → `Build with Maven` — compile error in integration tests
+**Latest failing run:** `23080076005`
 
-**Error:**
-```
-Downloading Maven Wrapper...
--Dmaven.multiModuleProjectDirectory system property is not set.
-##[error]Process completed with exit code 1.
-```
+**Current errors:**
+- `RefundServiceIntegrationTest.java` — `processRefund` called with 4 args; actual signature requires 5: `(UUID, BigDecimal, String, String, String)`. Affects ~14 call sites.
+- `RefundServiceIntegrationTest.java:[316]` — `getRefundsByPaymentId(UUID)` does not exist on `RefundService`.
 
-**Root cause:** Maven wrapper (`mvnw`) fails to initialize — either `mvnw` binary or `.mvn/wrapper/maven-wrapper.properties` is missing/corrupt, or the system property needs explicit setting.
+**Fixed so far (on this PR):**
+- `testcontainers-junit-jupiter` dependency added to pom.xml
+- `com.shoppingcart.payment.exception` package created (stub exceptions)
+- `PaymentControllerIntegrationTest` updated to use `ProcessPaymentRequest` DTO
+- `flyway-database-postgresql` version pinned to 10.6.0
+- PayPal SDK version updated to 2.0.0
+- `PACKAGES_TOKEN` secret wired for cross-repo GitHub Packages auth
+- `packages: read` permission added to CI workflow
 
-**Fix:**
-1. Verify `mvnw` and `.mvn/wrapper/maven-wrapper.properties` are committed and not gitignored
-2. If present, add `-Dmaven.multiModuleProjectDirectory=.` to the Maven command in the CI workflow
-
-**Priority:** P2 — assigned to v0.8.0 milestone. See `k3d-manager/docs/issues/2026-03-11-shopping-cart-ci-failures.md`.
+**Next task (assigned to Codex — 2026-03-14):**
+Fix all `processRefund` call sites in `RefundServiceIntegrationTest.java` to match the 5-arg signature. Fix or remove the `getRefundsByPaymentId` call. Wait for CI green before updating this memory-bank.
 
 ## Key Configuration to Note
 
