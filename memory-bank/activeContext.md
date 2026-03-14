@@ -69,6 +69,16 @@
 **Next task (assigned to Codex — 2026-03-14):**
 Fix all `processRefund` call sites in `RefundServiceIntegrationTest.java` to match the 5-arg signature. Fix or remove the `getRefundsByPaymentId` call. Wait for CI green before updating this memory-bank.
 
+## Local Dev Warning — Java Version Mismatch
+
+Local machine has **OpenJDK 25** but pom.xml targets **Java 21**. Running `mvn verify`
+locally may hang or timeout due to Testcontainers + module-system issues on JVM 25.
+
+**CI is NOT affected** — GitHub Actions pins `JAVA_VERSION: '21'`.
+
+**Codex workaround:** skip local `mvn verify`. Push fixes → monitor CI instead.
+Full details: `docs/issues/2026-03-14-local-java-version-mismatch.md`
+
 ## Key Configuration to Note
 
 The `ENCRYPTION_KEY` environment variable must be set for `EncryptionService` to function. In Kubernetes, this comes from the `payment-encryption-secret` ExternalSecret backed by Vault path `secret/data/payment/encryption`.
