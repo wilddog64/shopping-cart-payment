@@ -55,11 +55,6 @@ class PaymentServiceTest {
     private static final String CURRENCY = "USD";
     private static final String GATEWAY_NAME = "mock";
 
-    @BeforeEach
-    void setUp() {
-        when(mockGateway.getName()).thenReturn(GATEWAY_NAME);
-    }
-
     @Nested
     @DisplayName("processPayment")
     class ProcessPayment {
