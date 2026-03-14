@@ -54,7 +54,12 @@ public class PaymentController {
                 ? HttpStatus.CREATED
                 : HttpStatus.ACCEPTED;
 
-        return ResponseEntity.status(status).body(PaymentResponse.from(payment));
+        ResponseEntity.BodyBuilder builder = ResponseEntity.status(status);
+        if (correlationId != null) {
+            builder = builder.header("X-Correlation-ID", correlationId);
+        }
+
+        return builder.body(PaymentResponse.from(payment));
     }
 
     @GetMapping("/{paymentId}")

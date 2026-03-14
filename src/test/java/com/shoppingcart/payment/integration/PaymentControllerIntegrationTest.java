@@ -325,7 +325,7 @@ class PaymentControllerIntegrationTest extends BaseIntegrationTest {
 
     @Nested
     @DisplayName("GET /api/v1/payments/{id}/refunds")
-    @WithMockUser(roles = "PAYMENT_READ")
+    @WithMockUser(roles = {"PAYMENT_READ", "PAYMENT_WRITE"})
     class GetRefundsByPayment {
 
         @Test
