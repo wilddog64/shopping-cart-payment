@@ -33,9 +33,9 @@ class PaymentServiceIntegrationTest extends BaseIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        // Clean up test data
-        paymentRepository.deleteAll();
+        // Clean up dependent data before payments to avoid FK violations
         transactionRepository.deleteAll();
+        paymentRepository.deleteAll();
     }
 
     @Nested

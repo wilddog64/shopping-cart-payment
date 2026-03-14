@@ -8,6 +8,7 @@ import com.shoppingcart.payment.exception.PaymentNotFoundException;
 import com.shoppingcart.payment.exception.RefundException;
 import com.shoppingcart.payment.repository.PaymentRepository;
 import com.shoppingcart.payment.repository.RefundRepository;
+import com.shoppingcart.payment.repository.TransactionRepository;
 import com.shoppingcart.payment.service.PaymentService;
 import com.shoppingcart.payment.service.RefundService;
 import org.junit.jupiter.api.*;
@@ -35,11 +36,15 @@ class RefundServiceIntegrationTest extends BaseIntegrationTest {
     @Autowired
     private RefundRepository refundRepository;
 
+    @Autowired
+    private TransactionRepository transactionRepository;
+
     private static final String ORDER_ID_PREFIX = "order-refund-it-";
     private static final String CUSTOMER_ID = "customer-refund-test";
 
     @BeforeEach
     void setUp() {
+        transactionRepository.deleteAll();
         refundRepository.deleteAll();
         paymentRepository.deleteAll();
     }
