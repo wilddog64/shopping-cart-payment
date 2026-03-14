@@ -2,6 +2,7 @@ package com.shoppingcart.payment.controller;
 
 import com.shoppingcart.payment.dto.PaymentResponse;
 import com.shoppingcart.payment.dto.ProcessPaymentRequest;
+import com.shoppingcart.payment.dto.RefundResponse;
 import com.shoppingcart.payment.entity.Payment;
 import com.shoppingcart.payment.service.PaymentService;
 import com.shoppingcart.payment.service.RefundService;
@@ -26,7 +27,7 @@ public class PaymentController {
     private final RefundService refundService;
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('PAYMENT_USER', 'PAYMENT_ADMIN', 'PLATFORM_ADMIN')")
+    @PreAuthorize("hasAnyRole('PAYMENT_USER', 'PAYMENT_WRITE', 'PAYMENT_ADMIN', 'PLATFORM_ADMIN')")
     public ResponseEntity<PaymentResponse> processPayment(
             @Valid @RequestBody ProcessPaymentRequest request,
             @RequestHeader(value = "X-Correlation-ID", required = false) String correlationId,
@@ -113,8 +114,12 @@ public class PaymentController {
 
     @GetMapping("/{paymentId}/refunds")
     @PreAuthorize("hasAnyRole('PAYMENT_USER', 'PAYMENT_ADMIN', 'PLATFORM_ADMIN')")
-    public ResponseEntity<List<com.shoppingcart.payment.entity.Refund>> getRefundsForPayment(@PathVariable UUID paymentId) {
-        return ResponseEntity.ok(refundService.getRefundsByPayment(paymentId));
+    public ResponseEntity<List<RefundResponse>> getRefundsForPayment(@PathVariable UUID paymentId) {
+        List<RefundResponse> refunds = refundService.getRefundsByPayment(paymentId)
+                .stream()
+                .map(RefundResponse::from)
+                .toList();
+        return ResponseEntity.ok(refunds);
     }
 
     @PostMapping("/{paymentId}/refund")
@@ -135,6 +140,6 @@ public class PaymentController {
                 correlationId
         );
 
-        return ResponseEntity.ok(refund);
+        return ResponseEntity.ok(RefundResponse.from(refund));
     }
 }

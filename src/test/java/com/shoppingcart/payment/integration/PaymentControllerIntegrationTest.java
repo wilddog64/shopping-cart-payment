@@ -49,8 +49,8 @@ class PaymentControllerIntegrationTest extends BaseIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        refundRepository.deleteAll();
         transactionRepository.deleteAll();
+        refundRepository.deleteAll();
         paymentRepository.deleteAll();
     }
 
