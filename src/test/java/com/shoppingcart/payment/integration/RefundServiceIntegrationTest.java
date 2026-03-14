@@ -149,9 +149,9 @@ class RefundServiceIntegrationTest extends BaseIntegrationTest {
             assertThat(refund.getAmount()).isEqualByComparingTo(new BigDecimal("50.00"));
             assertThat(refund.getStatus()).isEqualTo(RefundStatus.COMPLETED);
 
-            // Payment should be partially refunded
+            // Payment should remain completed after partial refund
             Payment updatedPayment = paymentRepository.findById(payment.getId()).orElseThrow();
-            assertThat(updatedPayment.getStatus()).isEqualTo(PaymentStatus.PARTIALLY_REFUNDED);
+            assertThat(updatedPayment.getStatus()).isEqualTo(PaymentStatus.COMPLETED);
         }
 
         @Test

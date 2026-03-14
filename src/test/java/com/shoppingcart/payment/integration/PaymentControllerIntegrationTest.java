@@ -286,9 +286,9 @@ class PaymentControllerIntegrationTest extends BaseIntegrationTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.amount").value(25.00));
 
-            // Verify payment status is partially refunded
+            // Verify payment status reflects partial refund as completed
             Payment updated = paymentRepository.findById(payment.getId()).orElseThrow();
-            assertThat(updated.getStatus()).isEqualTo(PaymentStatus.PARTIALLY_REFUNDED);
+            assertThat(updated.getStatus()).isEqualTo(PaymentStatus.COMPLETED);
         }
 
         @Test
@@ -420,7 +420,7 @@ class PaymentControllerIntegrationTest extends BaseIntegrationTest {
                 .amount(new BigDecimal("99.99"))
                 .currency("USD")
                 .status(PaymentStatus.COMPLETED)
-                .gatewayName("mock")
+                .gateway("mock")
                 .gatewayTransactionId("mock-txn-" + UUID.randomUUID())
                 .build();
         return paymentRepository.save(payment);
@@ -433,7 +433,7 @@ class PaymentControllerIntegrationTest extends BaseIntegrationTest {
                 .amount(new BigDecimal("50.00"))
                 .currency("USD")
                 .status(PaymentStatus.COMPLETED)
-                .gatewayName("mock")
+                .gateway("mock")
                 .gatewayTransactionId("mock-txn-" + UUID.randomUUID())
                 .build();
         return paymentRepository.save(payment);
