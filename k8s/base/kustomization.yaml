@@ -20,3 +20,8 @@ resources:
 commonLabels:
   app.kubernetes.io/part-of: shopping-cart
   app.kubernetes.io/version: "1.0.0"
+
+images:
+  - name: ghcr.io/your-org/payment-service
+    newName: ghcr.io/wilddog64/shopping-cart-payment
+    newTag: latest
