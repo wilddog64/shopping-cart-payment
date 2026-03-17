@@ -4,11 +4,20 @@
 The payment service is a Spring Boot 3 application that runs in its own `shopping-cart-payment` namespace for PCI DSS isolation. It exposes REST APIs for payment/capture/refund flows, talks to PostgreSQL for persistence, and integrates with Stripe/PayPal gateways via pluggable adapters. Secrets are sourced from Vault/ESO and mounted as Kubernetes secrets specific to this namespace.
 
 ## Component Diagram
-```
-Clients → Ingress → Payment Service (Controllers → Services → Gateways) → PostgreSQL
-                                         ↘ EncryptionService (AES-256-GCM)
-                                          ↘ EventPublisher (RabbitMQ mock for audit)
-                                          ↘ Vault/ESO secrets (gateway creds, encryption key)
+
+```mermaid
+graph LR
+    Clients --> Ingress --> Controllers
+
+    subgraph PaymentService["Payment Service"]
+        Controllers --> Services
+        Services --> Gateways
+        Services --> Enc["EncryptionService\nAES-256-GCM"]
+        Services --> EP["EventPublisher\nRabbitMQ audit"]
+        Services --> Vault["Vault/ESO secrets\ngateway creds, encryption key"]
+    end
+
+    Gateways --> PG[(PostgreSQL)]
 ```
 
 ## Namespaces & Isolation
@@ -23,18 +32,21 @@ Clients → Ingress → Payment Service (Controllers → Services → Gateways) 
 - **Auth:** OAuth2 Resource Server validates JWTs; role-based checks guard admin endpoints.
 
 ## Gateway Abstraction
+
+```mermaid
+graph LR
+    PS[PaymentService] --> GR[PaymentGatewayRouter]
+    GR --> MG[MockGateway\ndefault for dev/tests]
+    GR --> SG[StripeGateway\nStripe REST APIs]
+    GR --> PP[PayPalGateway\nPayPal REST APIs]
 ```
-PaymentService
-  ├─ MockGateway (default for dev/tests)
-  ├─ StripeGateway (Stripe REST APIs)
-  └─ PayPalGateway (PayPal REST APIs)
-```
+
 Gateways share a common interface and are configured via `application.yml` toggles. Credentials come from Vault-sourced Kubernetes secrets.
 
 ## Data Flow
 1. Controller receives payment request, validates payload.
 2. Service ensures idempotency, loads order/payment metadata, encrypts sensitive data.
-3. GatewayRouter selects configured gateway and executes charge/refund.
+3. PaymentGatewayRouter selects configured gateway and executes charge/refund.
 4. Repository persists transaction + audit trail.
 5. Events/logs emitted for downstream auditing.
 
