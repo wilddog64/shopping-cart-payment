@@ -21,7 +21,7 @@ CI green. All PRs merged to main. Branch protection active.
 
 ## Active Task
 
-- **CI fixes — Maven wrapper + GitHub Packages auth** — Dockerfile now installs Maven via apk and mounts `GH_TOKEN` secret for dependency resolution (commits `ad9bc86`, `377cdf4`). Waiting for security scan to finish on run 23175303688.
+- **CI fixes — Maven wrapper + GitHub Packages auth** — Dockerfile now installs Maven via apk and mounts `GH_TOKEN` secret for dependency resolution (commits `ad9bc86`, `377cdf4`). Latest run (`23175303688`) still fails to authenticate to GitHub Packages; ensure `PACKAGES_TOKEN` has read access to `wilddog64/rabbitmq-client-java` packages.
 
 ## Agent Instructions
 

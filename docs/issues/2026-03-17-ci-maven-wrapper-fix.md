@@ -71,5 +71,6 @@ gh api repos/wilddog64/shopping-cart-payment/packages/container/shopping-cart-pa
 
 ## Status
 
-- Fix applied on `main` (commit `377cdf4`) — waiting on CI `Run 23175303688` to finish Security Scan.
-- Older queued workflows cancelled to reduce load.
+- Fix applied on `main` (commits `ad9bc86` + `377cdf4`).
+- Latest workflow (`Run 23175303688`) still fails in the "Build Docker Image" job because Maven receives `401 Unauthorized` while pulling `com.shoppingcart:rabbitmq-client` from `maven.pkg.github.com`. The `PACKAGES_TOKEN`/`GH_TOKEN` secret needs read access to `wilddog64/rabbitmq-client-java` packages.
+- Older queued workflows were cancelled to reduce load.
