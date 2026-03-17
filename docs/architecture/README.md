@@ -7,9 +7,9 @@ The payment service is a Spring Boot 3 application that runs in its own `shoppin
 
 ```mermaid
 graph LR
-    Clients --> Ingress --> PS
+    Clients --> Ingress --> Controllers
 
-    subgraph PS["Payment Service"]
+    subgraph PaymentService["Payment Service"]
         Controllers --> Services
         Services --> Gateways
         Services --> Enc["EncryptionService\nAES-256-GCM"]
@@ -35,7 +35,7 @@ graph LR
 
 ```mermaid
 graph LR
-    PS[PaymentService] --> GR[GatewayRouter]
+    PS[PaymentService] --> GR[PaymentGatewayRouter]
     GR --> MG[MockGateway\ndefault for dev/tests]
     GR --> SG[StripeGateway\nStripe REST APIs]
     GR --> PP[PayPalGateway\nPayPal REST APIs]
