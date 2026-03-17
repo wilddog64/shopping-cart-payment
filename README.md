@@ -252,4 +252,4 @@ src/main/java/com/shoppingcart/payment/
 
 ## License
 
-MIT
+Apache 2.0
