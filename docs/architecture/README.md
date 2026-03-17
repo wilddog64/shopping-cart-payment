@@ -46,7 +46,7 @@ Gateways share a common interface and are configured via `application.yml` toggl
 ## Data Flow
 1. Controller receives payment request, validates payload.
 2. Service ensures idempotency, loads order/payment metadata, encrypts sensitive data.
-3. GatewayRouter selects configured gateway and executes charge/refund.
+3. PaymentGatewayRouter selects configured gateway and executes charge/refund.
 4. Repository persists transaction + audit trail.
 5. Events/logs emitted for downstream auditing.
 
