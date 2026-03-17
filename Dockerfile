@@ -6,20 +6,18 @@ FROM eclipse-temurin:21-jdk-alpine AS builder
 
 WORKDIR /app
 
-# Install Maven
-RUN apk add --no-cache maven
-
-# Copy pom.xml first for dependency caching
-COPY pom.xml ./
+# Copy Maven wrapper and pom.xml first for better caching
+COPY .mvn/ .mvn/
+COPY mvnw pom.xml ./
 
 # Download dependencies (cached layer)
-RUN mvn dependency:go-offline -B
+RUN ./mvnw dependency:go-offline -B
 
 # Copy source code
 COPY src/ src/
 
 # Build the application
-RUN mvn package -DskipTests -B
+RUN ./mvnw package -DskipTests -B
 
 # Extract layers for optimized Docker layering
 RUN java -Djarmode=layertools -jar target/*.jar extract --destination extracted
