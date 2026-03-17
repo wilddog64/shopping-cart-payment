@@ -21,7 +21,7 @@ CI green. All PRs merged to main. Branch protection active.
 
 ## Active Task
 
-- **v0.1.0 release** — cut `release/v0.1.0` from main, add CHANGELOG, open PR, tag after merge.
+- **CI fixes — Maven wrapper + GitHub Packages auth** — Dockerfile now installs Maven via apk and mounts `GH_TOKEN` secret for dependency resolution (commits `ad9bc86`, `377cdf4`). Waiting for security scan to finish on run 23175303688.
 
 ## Agent Instructions
 

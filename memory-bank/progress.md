@@ -94,6 +94,10 @@
 - [ ] Contract tests (Pact)
 - [ ] Chaos engineering tests
 
+## Recent Work
+
+- 2026-03-17 — Dockerfile switched to system Maven and BuildKit `GH_TOKEN` secret to download GitHub Packages dependencies (commits `ad9bc86`, `377cdf4`). CI run 23175303688 still in progress.
+
 ## Key Metrics
 
 | Metric | Name | Labels |
