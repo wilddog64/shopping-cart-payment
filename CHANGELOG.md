@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+- Add missing `payment-db-credentials` and `payment-encryption-secret` Kubernetes Secrets
+  to `k8s/base/secret.yaml` — resolves `CreateContainerConfigError` on Ubuntu k3s cluster
+- Include `secret.yaml` in `k8s/base/kustomization.yaml` so ArgoCD deploys the Secrets automatically
+
 ## [0.1.0] - 2026-03-14
 
 ### Added
