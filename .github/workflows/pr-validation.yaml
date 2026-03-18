@@ -56,6 +56,7 @@ jobs:
       - name: Run Tests
         run: ./mvnw test -B -s .github/maven-settings.xml
         env:
+          MAVEN_OPTS: "-Dmaven.multiModuleProjectDirectory=${{ github.workspace }}"
           PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check code coverage
@@ -63,12 +64,14 @@ jobs:
           ./mvnw jacoco:report -B -s .github/maven-settings.xml
           # Add coverage threshold check
         env:
+          MAVEN_OPTS: "-Dmaven.multiModuleProjectDirectory=${{ github.workspace }}"
           PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: SpotBugs Analysis
         run: ./mvnw spotbugs:check -B -s .github/maven-settings.xml
         continue-on-error: true
         env:
+          MAVEN_OPTS: "-Dmaven.multiModuleProjectDirectory=${{ github.workspace }}"
           PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   code-quality:
