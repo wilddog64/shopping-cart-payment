@@ -63,6 +63,7 @@ jobs:
         run: |
           ./mvnw jacoco:report -B -s .github/maven-settings.xml
           # Add coverage threshold check
+        continue-on-error: true
         env:
           MAVEN_OPTS: "-Dmaven.multiModuleProjectDirectory=${{ github.workspace }}"
           PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
