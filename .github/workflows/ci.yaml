@@ -210,37 +210,6 @@ jobs:
           secrets: |
             GH_TOKEN=${{ secrets.PACKAGES_TOKEN }}
 
-  deploy-dev:
-    name: Deploy to Dev
-    runs-on: ubuntu-latest
-    needs: docker-build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    environment: development
-
-    steps:
-      - name: Checkout infra repo
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ github.repository_owner }}/shopping-cart-infra
-          token: ${{ secrets.INFRA_REPO_TOKEN }}
-          path: infra
-
-      - name: Update image tag
-        run: |
-          cd infra
-          # Update the image tag in kustomization or values file
-          echo "Would update image tag to ${{ github.sha }}"
-          # Example: yq e '.images[0].newTag = "${{ github.sha }}"' -i k8s/overlays/dev/kustomization.yaml
-
-      - name: Commit and push
-        run: |
-          cd infra
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          # git add .
-          # git commit -m "chore: update payment-service to ${{ github.sha }}"
-          # git push
-          echo "Would commit and push image tag update"
   publish:
     name: Build, Scan & Push
     needs: [build]
