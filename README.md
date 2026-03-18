@@ -68,7 +68,7 @@ make test-coverage
 
 ### Kubernetes Notes
 - Namespace: `shopping-cart-payment` (PCI isolation)
-- Secrets required: `payment-db-secret`, `payment-gateway-secrets`, `payment-encryption-secret`
+- Secrets required: `payment-db-credentials`, `payment-gateway-secrets` (optional), `payment-encryption-secret`
 - Probes target `/actuator/health/liveness` and `/actuator/health/readiness`
 
 ---

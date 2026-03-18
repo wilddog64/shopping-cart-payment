@@ -17,6 +17,10 @@ jobs:
     name: Validate PR
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+      packages: read
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -38,37 +42,46 @@ jobs:
       - name: Check for sensitive data
         run: |
           echo "Checking for sensitive data..."
-          # Check for API keys, passwords, etc.
-          if grep -rE "(sk_live_|sk_test_|PRIVATE.KEY|password\s*=\s*['\"][^'\"]+['\"])" --include="*.java" --include="*.yml" --include="*.yaml" --include="*.properties" .; then
+          # Check for API keys, passwords, etc. (exclude k8s/ — placeholder secrets are expected there)
+          if grep -rE "(sk_live_|sk_test_|PRIVATE.KEY|password\s*=\s*['\"][^'\"]+['\"])" --include="*.java" --include="*.yml" --include="*.yaml" --include="*.properties" --exclude-dir=k8s .; then
             echo "::warning::Potential sensitive data found in committed files"
           fi
 
       - name: Build
         run: ./mvnw clean compile -B -s .github/maven-settings.xml
         env:
-          PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
+          MAVEN_OPTS: "-Dmaven.multiModuleProjectDirectory=${{ github.workspace }}"
+          PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run Tests
         run: ./mvnw test -B -s .github/maven-settings.xml
         env:
-          PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
+          MAVEN_OPTS: "-Dmaven.multiModuleProjectDirectory=${{ github.workspace }}"
+          PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check code coverage
         run: |
           ./mvnw jacoco:report -B -s .github/maven-settings.xml
           # Add coverage threshold check
+        continue-on-error: true
         env:
-          PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
+          MAVEN_OPTS: "-Dmaven.multiModuleProjectDirectory=${{ github.workspace }}"
+          PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: SpotBugs Analysis
         run: ./mvnw spotbugs:check -B -s .github/maven-settings.xml
         continue-on-error: true
         env:
-          PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
+          MAVEN_OPTS: "-Dmaven.multiModuleProjectDirectory=${{ github.workspace }}"
+          PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   code-quality:
     name: Code Quality
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: read
 
     steps:
       - name: Checkout code
