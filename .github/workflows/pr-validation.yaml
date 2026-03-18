@@ -17,6 +17,10 @@ jobs:
     name: Validate PR
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+      packages: read
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -46,29 +50,33 @@ jobs:
       - name: Build
         run: ./mvnw clean compile -B -s .github/maven-settings.xml
         env:
-          PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
+          PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run Tests
         run: ./mvnw test -B -s .github/maven-settings.xml
         env:
-          PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
+          PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check code coverage
         run: |
           ./mvnw jacoco:report -B -s .github/maven-settings.xml
           # Add coverage threshold check
         env:
-          PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
+          PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: SpotBugs Analysis
         run: ./mvnw spotbugs:check -B -s .github/maven-settings.xml
         continue-on-error: true
         env:
-          PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
+          PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   code-quality:
     name: Code Quality
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: read
 
     steps:
       - name: Checkout code
@@ -89,7 +97,9 @@ jobs:
       - name: Run static analysis
         run: |
           echo "Running static analysis..."
-          ./mvnw pmd:check -B || true
+          ./mvnw pmd:check -B -s .github/maven-settings.xml || true
+        env:
+          PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   api-compatibility:
     name: API Compatibility
