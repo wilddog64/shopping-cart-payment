@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Changed
+- Reduce deployment replicas from 2 to 1 for dev/test environment; delete HPA (`minReplicas: 2` was scaling pods back up on single-node cluster); will reintroduce in v1.1.0 EKS
+
 ### Fixed
 - Add missing `payment-db-credentials` and `payment-encryption-secret` Kubernetes Secrets
   to `k8s/base/secret.yaml` — resolves `CreateContainerConfigError` on Ubuntu k3s cluster;
