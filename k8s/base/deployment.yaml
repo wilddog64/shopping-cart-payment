@@ -10,7 +10,7 @@ metadata:
     app.kubernetes.io/part-of: shopping-cart
     pci-scope: "true"
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/name: payment-service
