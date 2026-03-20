@@ -117,7 +117,7 @@ k8s/              # Deployment manifests
 
 | Version | Date | Highlights |
 |---------|------|------------|
-| v0.1.1 | 2026-03-18 | Add missing k8s Secrets; fix pr-validation CI (MAVEN_OPTS, GITHUB_TOKEN) |
+| v0.1.1 | 2026-03-20 | Add missing k8s Secrets; fix pr-validation CI; reduce to single replica + remove HPA for dev/test |
 | v0.1.0 | 2026-03-14 | Initial payment processing release with Stripe/PayPal gateways |
 
 ---
