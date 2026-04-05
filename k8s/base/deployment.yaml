@@ -20,6 +20,7 @@ spec:
         app.kubernetes.io/name: payment-service
         app.kubernetes.io/component: backend
         app.kubernetes.io/part-of: shopping-cart
+        app.kubernetes.io/version: "1.0.0"
         pci-scope: "true"
       annotations:
         prometheus.io/scrape: "true"
@@ -62,6 +63,16 @@ spec:
           value: "rabbitmq.shopping-cart-data.svc.cluster.local"
         - name: RABBITMQ_PORT
           value: "5672"
+        - name: RABBITMQ_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: payment-db-credentials
+              key: RABBITMQ_USERNAME
+        - name: RABBITMQ_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: payment-db-credentials
+              key: RABBITMQ_PASSWORD
         - name: OAUTH2_ISSUER_URI
           valueFrom:
             configMapKeyRef:
