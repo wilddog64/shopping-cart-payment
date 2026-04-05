@@ -20,7 +20,6 @@ spec:
         app.kubernetes.io/name: payment-service
         app.kubernetes.io/component: backend
         app.kubernetes.io/part-of: shopping-cart
-        app.kubernetes.io/version: "1.0.0"
         pci-scope: "true"
       annotations:
         prometheus.io/scrape: "true"
