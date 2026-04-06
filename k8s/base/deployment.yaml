@@ -42,6 +42,8 @@ spec:
         env:
         - name: SERVER_PORT
           value: "8084"
+        - name: SPRING_CLOUD_VAULT_ENABLED
+          value: "false"
         - name: DB_HOST
           value: "postgresql-payment.shopping-cart-data.svc.cluster.local"
         - name: DB_PORT
