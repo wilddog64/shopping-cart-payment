@@ -10,8 +10,8 @@ metadata:
     app.kubernetes.io/part-of: shopping-cart
 data:
   # OAuth2 Configuration
-  oauth2.issuer-uri: "http://keycloak.identity.svc.cluster.local/realms/shopping-cart"
-  oauth2.jwk-set-uri: "http://keycloak.identity.svc.cluster.local/realms/shopping-cart/protocol/openid-connect/certs"
+  oauth2.issuer-uri: "https://keycloak.3ai-talk.org/realms/shopping-cart"
+  oauth2.jwk-set-uri: "https://keycloak.3ai-talk.org/realms/shopping-cart/protocol/openid-connect/certs"
 
   # Payment Gateway Configuration
   payment.gateway.default: "mock"
