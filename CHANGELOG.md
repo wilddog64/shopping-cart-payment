@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Fixed
+- Update OAuth2 issuer URI from internal cluster domain to external Keycloak domain (`keycloak.3ai-talk.org`)
 - Bump `build-push-deploy.yml` reusable workflow SHA from `999f8d70` to `39c3072` — resolves `Unable to resolve action 'aquasecurity/trivy-action@0.30.0'` CI failure; image now pushable to GHCR
 
 ## [0.1.1] - 2026-03-20
