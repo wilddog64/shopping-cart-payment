@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+- Update OAuth2 issuer and JWK set URIs from internal cluster domain to external Keycloak domain (`keycloak.3ai-talk.org`)
+
 ## [0.1.0] - 2026-03-14
 
 ### Added
