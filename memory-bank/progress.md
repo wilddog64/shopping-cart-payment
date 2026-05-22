@@ -77,6 +77,7 @@
 - [x] `k8s/base/hpa.yaml` — 2–10 replicas
 - [x] `k8s/base/kustomization.yaml`
 - [x] `.github/workflows/ci.yaml`
+- [x] CI workflow pin updated to `build-push-deploy.yml@999f8d7` (multi-arch) — 2026-03-17
 - [x] `.github/workflows/pr-validation.yaml`
 - [x] `.github/workflows/release.yaml`
 - [x] `.gitignore`

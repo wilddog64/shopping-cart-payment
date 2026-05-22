@@ -12,10 +12,10 @@ labels:
 resources:
 - serviceaccount.yaml
 - configmap.yaml
+- secret.yaml
 - deployment.yaml
 - service.yaml
 - networkpolicy.yaml
-- hpa.yaml
 
 commonLabels:
   app.kubernetes.io/part-of: shopping-cart
