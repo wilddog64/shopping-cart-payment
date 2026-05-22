@@ -51,6 +51,7 @@ package com.shoppingcart.payment.config;
 public class RateLimitConfig {
 
     // Strict: payment processing
+    @Bean
     public BucketConfiguration paymentBucketConfig() {
         return BucketConfiguration.builder()
             .addLimit(Bandwidth.classic(5, Refill.greedy(5, Duration.ofSeconds(1))))
@@ -59,6 +60,7 @@ public class RateLimitConfig {
     }
 
     // Stricter: refunds
+    @Bean
     public BucketConfiguration refundBucketConfig() {
         return BucketConfiguration.builder()
             .addLimit(Bandwidth.classic(2, Refill.greedy(2, Duration.ofSeconds(1))))
@@ -67,6 +69,7 @@ public class RateLimitConfig {
     }
 
     // Relaxed: read endpoints
+    @Bean
     public BucketConfiguration readBucketConfig() {
         return BucketConfiguration.builder()
             .addLimit(Bandwidth.classic(30, Refill.greedy(30, Duration.ofSeconds(1))))
@@ -85,6 +88,11 @@ the correct bucket configuration. Skip `/actuator/**` health endpoints.
 Same as order service — use `REDIS_HOST` / `REDIS_PORT` env vars.
 Note: payment service connects to `orders-cache` Redis (not basket Redis) — confirm
 namespace/service name in k8s manifests before wiring.
+
+**Important:** Wiring a `RedissonClient` requires adding `REDIS_HOST` and `REDIS_PORT`
+env vars to `k8s/base/deployment.yaml`. This is a manifest change. The DoD below
+says "No changes to k8s manifests" — that constraint applies to NetworkPolicy, Service,
+and Namespace manifests only. Deployment env var additions are required for Redis wiring.
 
 ## Definition of Done
 

@@ -1,13 +1,12 @@
 # Retrospective — OIDC Issuer Fix
 
 **Date:** 2026-05-22
-**PR:** #19 — merged to main (`e49be1bb956cc5d584d107fbcad46be4da837636`)
+**PR:** #19 — merged to main (`e49be1bb956cc5d584d107fbcad46be4da837636`) *(post-merge retrospective — recorded on next working branch)*
 **Participants:** Claude, Copilot
 
 ## What Went Well
 - Copilot caught the missing pod rollout trigger (configmap checksum)
 - Copilot caught the JWK set URI NetworkPolicy mismatch (payment)
-- configMapGenerator implemented for automatic rolling restarts
 
 ## What Went Wrong
 - Initial fix set both oauth2.issuer-uri and jwk-set-uri to external URL; only issuer-uri needs to be external
