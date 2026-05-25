@@ -9,6 +9,9 @@ labels:
     app.kubernetes.io/managed-by: kustomize
   includeSelectors: false
 
+# Secrets (payment-db-credentials, payment-encryption-secret) are NOT listed here.
+# They are provisioned at runtime by ESO ExternalSecrets in the data-layer ArgoCD app.
+# Do not add Secret manifests to this list — ESO owns them via creationPolicy: Owner.
 resources:
 - serviceaccount.yaml
 - configmap.yaml
