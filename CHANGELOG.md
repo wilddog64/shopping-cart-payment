@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Fixed
+- Remove placeholder `secret.yaml` from kustomization — ESO syncs both `payment-db-credentials` and `payment-encryption-secret` from Vault; Kubernetes Secrets are created at runtime, not checked into git
 - Update OAuth2 issuer URI from internal cluster domain to external Keycloak domain (`keycloak.3ai-talk.org`)
 - Bump `build-push-deploy.yml` reusable workflow SHA from `999f8d70` to `39c3072` — resolves `Unable to resolve action 'aquasecurity/trivy-action@0.30.0'` CI failure; image now pushable to GHCR
 
