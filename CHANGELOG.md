@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Fixed
+- Remove placeholder `secret.yaml` from kustomization — Secrets `payment-db-credentials` (created by ExternalSecret `postgres-payment-app`) and `payment-encryption-secret` (created by ExternalSecret `payment-encryption-secret`) are provisioned at runtime by ESO from Vault; they are not checked into git
 - Update OAuth2 issuer URI from internal cluster domain to external Keycloak domain (`keycloak.3ai-talk.org`)
 - Bump `build-push-deploy.yml` reusable workflow SHA from `999f8d70` to `39c3072` — resolves `Unable to resolve action 'aquasecurity/trivy-action@0.30.0'` CI failure; image now pushable to GHCR
 
