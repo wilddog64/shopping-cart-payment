@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Added
+- `.githooks/pre-push`: pre-push hook to block accidental direct pushes from feature branches to main; bypass with `ALLOW_MAIN_PUSH=1`
+
 ### Fixed
 - Remove placeholder `secret.yaml` from kustomization — Secrets `payment-db-credentials` (created by ExternalSecret `postgres-payment-app`) and `payment-encryption-secret` (created by ExternalSecret `payment-encryption-secret`) are provisioned at runtime by ESO from Vault; they are not checked into git
 - Update OAuth2 issuer URI from internal cluster domain to external Keycloak domain (`keycloak.3ai-talk.org`)
