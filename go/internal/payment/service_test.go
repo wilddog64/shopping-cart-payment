@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/shopspring/decimal"
 
 	"github.com/wilddog64/shopping-cart-payment/go/internal/gateway"
@@ -20,10 +22,10 @@ func TestPaymentServiceProcessPaymentSuccessAndIdempotency(t *testing.T) {
 		CustomerID:     "customer-123",
 		Amount:         decimal.RequireFromString("42.5000"),
 		Currency:       "usd",
-		CardNumber:     "4242424242424242",
+		CardNumber:     "tok_test_4242",
 		CardExpMonth:   "12",
 		CardExpYear:    "2030",
-		CardCvc:        "123",
+		CardCvc:        "test-cvc",
 		CardholderName: "Ada Lovelace",
 	}
 
@@ -81,7 +83,7 @@ func TestPaymentServiceProcessPaymentFailure(t *testing.T) {
 		CustomerID: "customer-fail",
 		Amount:     decimal.RequireFromString("10.0000"),
 		Currency:   "usd",
-		CardNumber: "4242424242424242",
+		CardNumber: "tok_test_4242",
 	}
 
 	payment, err := svc.ProcessPayment(context.Background(), req, "", "idem-fail")
@@ -106,6 +108,85 @@ func TestPaymentServiceProcessPaymentFailure(t *testing.T) {
 	if store.transactions[0].Type != TransactionTypeCharge || store.transactions[0].Success {
 		t.Fatalf("failure audit row = %+v", store.transactions[0])
 	}
+}
+
+func TestPaymentServiceProcessPaymentReturnsExistingOnUniqueViolation(t *testing.T) {
+	store := newUniqueViolationStore()
+	existing := &Payment{
+		ID:          uuid.New(),
+		OrderID:     "order-race",
+		CustomerID:  "customer-race",
+		Amount:      decimal.RequireFromString("15.0000"),
+		Currency:    "USD",
+		Status:      PaymentStatusCompleted,
+		Gateway:     "mock",
+		CreatedAt:   timeNowUTC(),
+		CompletedAt: sqlNullTime(timeNowUTC()),
+	}
+	existing.IdempotencyKey = sqlNullString("idem-race")
+	if err := store.fakeStore.CreatePayment(context.Background(), existing); err != nil {
+		t.Fatalf("seed existing payment: %v", err)
+	}
+
+	router := gateway.NewRouter("mock", gateway.NewMockGateway(true, 0, 0))
+	svc := NewPaymentService(store, router)
+
+	req := ProcessPaymentRequest{
+		OrderID:    existing.OrderID,
+		CustomerID: existing.CustomerID,
+		Amount:     existing.Amount,
+		Currency:   existing.Currency,
+		CardNumber: "tok_test_4242",
+	}
+
+	payment, err := svc.ProcessPayment(context.Background(), req, "corr-race", "idem-race")
+	if err != nil {
+		t.Fatalf("ProcessPayment unique violation: %v", err)
+	}
+	if payment.ID != existing.ID {
+		t.Fatalf("payment ID = %s, want %s", payment.ID, existing.ID)
+	}
+	if store.createPaymentCalls != 1 {
+		t.Fatalf("create payment calls = %d, want 1", store.createPaymentCalls)
+	}
+}
+
+type uniqueViolationStore struct {
+	*fakeStore
+	orderLookups       int
+	idempotencyLookups int
+}
+
+func newUniqueViolationStore() *uniqueViolationStore {
+	return &uniqueViolationStore{fakeStore: newFakeStore()}
+}
+
+func (s *uniqueViolationStore) GetPaymentByOrderID(_ context.Context, orderID string) (*Payment, error) {
+	s.orderLookups++
+	if s.orderLookups == 1 {
+		return nil, pgx.ErrNoRows
+	}
+	return s.fakeStore.GetPaymentByOrderID(context.Background(), orderID)
+}
+
+func (s *uniqueViolationStore) GetPaymentByIdempotencyKey(_ context.Context, idempotencyKey string) (*Payment, error) {
+	s.idempotencyLookups++
+	if s.idempotencyLookups == 1 {
+		return nil, pgx.ErrNoRows
+	}
+	return s.fakeStore.GetPaymentByIdempotencyKey(context.Background(), idempotencyKey)
+}
+
+func (s *uniqueViolationStore) RunInTx(_ context.Context, fn func(paymentStore) error) error {
+	return fn(uniqueViolationTxStore{s.fakeStore})
+}
+
+type uniqueViolationTxStore struct {
+	paymentStore
+}
+
+func (s uniqueViolationTxStore) CreatePayment(context.Context, *Payment) error {
+	return &pgconn.PgError{Code: "23505"}
 }
 
 func TestRefundServiceStatusMachinesAndGuards(t *testing.T) {

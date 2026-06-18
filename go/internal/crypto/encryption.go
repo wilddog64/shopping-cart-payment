@@ -28,16 +28,14 @@ func NewEncryptionService(enabled bool, keyMaterial string) (*EncryptionService,
 		return svc, nil
 	}
 	if keyMaterial == "" {
-		key := make([]byte, 32)
-		if _, err := io.ReadFull(rand.Reader, key); err != nil {
-			return nil, err
-		}
-		svc.key = key
-		return svc, nil
+		return nil, errors.New("encryption enabled but ENCRYPTION_KEY is empty")
 	}
 	key, err := decodeKey(keyMaterial)
 	if err != nil {
 		return nil, err
+	}
+	if len(key) != 32 {
+		return nil, errors.New("encryption key must be 32 bytes (AES-256)")
 	}
 	svc.key = key
 	return svc, nil
@@ -58,7 +56,7 @@ func (s *EncryptionService) IsEnabled() bool {
 }
 
 func (s *EncryptionService) Encrypt(plaintext string) (string, error) {
-	if !s.enabled || plaintext == "" {
+	if !s.IsEnabled() || plaintext == "" {
 		return plaintext, nil
 	}
 	block, err := aes.NewCipher(s.key)
@@ -81,7 +79,7 @@ func (s *EncryptionService) Encrypt(plaintext string) (string, error) {
 }
 
 func (s *EncryptionService) Decrypt(ciphertext string) (string, error) {
-	if !s.enabled || ciphertext == "" {
+	if !s.IsEnabled() || ciphertext == "" {
 		return ciphertext, nil
 	}
 	decoded, err := base64.StdEncoding.DecodeString(ciphertext)

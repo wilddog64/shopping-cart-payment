@@ -36,10 +36,20 @@ func SecurityHeaders() gin.HandlerFunc {
 	}
 }
 
+const (
+	rateLimiterEntryTTL   = 10 * time.Minute
+	rateLimiterSweepEvery = 1 * time.Minute
+)
+
+type limiterEntry struct {
+	limiter  *rate.Limiter
+	lastSeen time.Time
+}
+
 type limiter struct {
 	mu       sync.Mutex
 	enabled  bool
-	limiters map[string]*rate.Limiter
+	limiters map[string]*limiterEntry
 	limit    rate.Limit
 	burst    int
 }
@@ -47,9 +57,12 @@ type limiter struct {
 func NewRateLimiter(enabled bool, perSecond, burst int) gin.HandlerFunc {
 	l := &limiter{
 		enabled:  enabled,
-		limiters: map[string]*rate.Limiter{},
+		limiters: map[string]*limiterEntry{},
 		limit:    rate.Limit(perSecond),
 		burst:    burst,
+	}
+	if enabled {
+		go l.sweep()
 	}
 	return func(c *gin.Context) {
 		if !l.enabled || strings.HasPrefix(c.FullPath(), "/actuator/") {
@@ -72,12 +85,28 @@ func NewRateLimiter(enabled bool, perSecond, burst int) gin.HandlerFunc {
 func (l *limiter) getLimiter(ip string) *rate.Limiter {
 	l.mu.Lock()
 	defer l.mu.Unlock()
-	rl, ok := l.limiters[ip]
+	entry, ok := l.limiters[ip]
 	if !ok {
-		rl = rate.NewLimiter(l.limit, l.burst)
-		l.limiters[ip] = rl
+		entry = &limiterEntry{limiter: rate.NewLimiter(l.limit, l.burst)}
+		l.limiters[ip] = entry
 	}
-	return rl
+	entry.lastSeen = time.Now()
+	return entry.limiter
+}
+
+func (l *limiter) sweep() {
+	ticker := time.NewTicker(rateLimiterSweepEvery)
+	defer ticker.Stop()
+	for range ticker.C {
+		cutoff := time.Now().Add(-rateLimiterEntryTTL)
+		l.mu.Lock()
+		for ip, entry := range l.limiters {
+			if entry.lastSeen.Before(cutoff) {
+				delete(l.limiters, ip)
+			}
+		}
+		l.mu.Unlock()
+	}
 }
 
 func RequestLogger(logger *zap.Logger) gin.HandlerFunc {

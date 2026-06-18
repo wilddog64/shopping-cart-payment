@@ -199,6 +199,8 @@ func validateProcessPaymentRequest(req ProcessPaymentRequest) *APIError {
 		return BadRequest("CUSTOMER_ID_REQUIRED", "Customer ID is required")
 	case !decimalCmpPositive(req.Amount):
 		return BadRequest("AMOUNT_INVALID", "Amount must be greater than 0")
+	case req.Amount.Exponent() < -4:
+		return BadRequest("AMOUNT_SCALE_INVALID", "Amount supports at most 4 decimal places")
 	case len(strings.TrimSpace(req.Currency)) != 3:
 		return BadRequest("CURRENCY_INVALID", "Currency must be 3 characters")
 	default:
@@ -209,6 +211,9 @@ func validateProcessPaymentRequest(req ProcessPaymentRequest) *APIError {
 func validateRefundRequest(req RefundRequest) *APIError {
 	if !decimalCmpPositive(req.Amount) {
 		return BadRequest("AMOUNT_INVALID", "Amount must be greater than 0")
+	}
+	if req.Amount.Exponent() < -4 {
+		return BadRequest("AMOUNT_SCALE_INVALID", "Amount supports at most 4 decimal places")
 	}
 	return nil
 }

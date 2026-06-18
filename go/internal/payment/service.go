@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/shopspring/decimal"
 
 	"github.com/wilddog64/shopping-cart-payment/go/internal/gateway"
@@ -21,6 +22,10 @@ type PaymentService struct {
 
 func NewPaymentService(store paymentStore, router *gateway.Router) *PaymentService {
 	return &PaymentService{store: store, router: router}
+}
+
+type paymentTransactionRunner interface {
+	RunInTx(ctx context.Context, fn func(paymentStore) error) error
 }
 
 func (s *PaymentService) ProcessPayment(ctx context.Context, req ProcessPaymentRequest, correlationID, idempotencyKey string) (*Payment, error) {
@@ -66,16 +71,6 @@ func (s *PaymentService) ProcessPayment(ctx context.Context, req ProcessPaymentR
 		UpdatedAt:       sql.NullTime{Time: now, Valid: true},
 	}
 
-	if err := s.store.CreatePayment(ctx, payment); err != nil {
-		return nil, err
-	}
-
-	payment.Status = PaymentStatusProcessing
-	payment.ProcessedAt = sql.NullTime{Time: now, Valid: true}
-	if err := s.store.UpdatePayment(ctx, payment); err != nil {
-		return nil, err
-	}
-
 	request := gateway.PaymentRequest{
 		OrderID:             req.OrderID,
 		CustomerID:          req.CustomerID,
@@ -99,40 +94,23 @@ func (s *PaymentService) ProcessPayment(ctx context.Context, req ProcessPaymentR
 	}
 
 	result := gatewayImpl.ProcessPayment(request)
-	if err := s.store.CreateTransaction(ctx, &Transaction{
-		ID:                   uuid.New(),
-		PaymentID:            payment.ID,
-		Type:                 TransactionTypeCharge,
-		Amount:               req.Amount,
-		Currency:             strings.ToUpper(req.Currency),
-		Success:              result.Success,
-		GatewayTransactionID: nullString(result.TransactionID),
-		GatewayResponse:      nullString(result.RawResponse),
-		GatewayErrorCode:     nullString(result.ErrorCode),
-		GatewayErrorMessage:  nullString(result.ErrorMessage),
-		CreatedAt:            time.Now().UTC(),
-		CorrelationID:        nullString(correlationID),
-	}); err != nil {
-		return nil, err
+	persist := func(store paymentStore) error {
+		return persistProcessedPayment(ctx, store, payment, req, correlationID, result, now)
 	}
 
-	if result.Success {
-		payment.Status = PaymentStatusCompleted
-		payment.GatewayTransactionID = nullString(result.TransactionID)
-		payment.GatewayPaymentIntentID = nullString(result.PaymentIntentID)
-		payment.CardLast4 = nullString(result.CardLast4)
-		payment.CardBrand = nullString(result.CardBrand)
-		payment.CompletedAt = sql.NullTime{Time: time.Now().UTC(), Valid: true}
-		payment.FailureReason = sql.NullString{}
-		payment.FailureCode = sql.NullString{}
+	var persistErr error
+	if runner, ok := s.store.(paymentTransactionRunner); ok {
+		persistErr = runner.RunInTx(ctx, persist)
 	} else {
-		payment.Status = PaymentStatusFailed
-		payment.FailureCode = nullString(result.ErrorCode)
-		payment.FailureReason = nullString(result.ErrorMessage)
+		persistErr = persist(s.store)
 	}
-
-	if err := s.store.UpdatePayment(ctx, payment); err != nil {
-		return nil, err
+	if persistErr != nil {
+		if isUniqueViolation(persistErr) && strings.TrimSpace(idempotencyKey) != "" {
+			if existing, getErr := s.store.GetPaymentByIdempotencyKey(ctx, idempotencyKey); getErr == nil {
+				return existing, nil
+			}
+		}
+		return nil, persistErr
 	}
 	return payment, nil
 }
@@ -181,6 +159,63 @@ func nullString(value string) sql.NullString {
 		return sql.NullString{}
 	}
 	return sql.NullString{String: value, Valid: true}
+}
+
+func persistProcessedPayment(ctx context.Context, store paymentStore, payment *Payment, req ProcessPaymentRequest, correlationID string, result gateway.PaymentResult, now time.Time) error {
+	if err := store.CreatePayment(ctx, payment); err != nil {
+		return err
+	}
+
+	payment.Status = PaymentStatusProcessing
+	payment.ProcessedAt = sql.NullTime{Time: now, Valid: true}
+	if err := store.UpdatePayment(ctx, payment); err != nil {
+		return err
+	}
+
+	if err := store.CreateTransaction(ctx, &Transaction{
+		ID:                   uuid.New(),
+		PaymentID:            payment.ID,
+		Type:                 TransactionTypeCharge,
+		Amount:               req.Amount,
+		Currency:             strings.ToUpper(req.Currency),
+		Success:              result.Success,
+		GatewayTransactionID: nullString(result.TransactionID),
+		GatewayResponse:      nullString(result.RawResponse),
+		GatewayErrorCode:     nullString(result.ErrorCode),
+		GatewayErrorMessage:  nullString(result.ErrorMessage),
+		CreatedAt:            now,
+		CorrelationID:        nullString(correlationID),
+	}); err != nil {
+		return err
+	}
+
+	if result.Success {
+		payment.Status = PaymentStatusCompleted
+		payment.GatewayTransactionID = nullString(result.TransactionID)
+		payment.GatewayPaymentIntentID = nullString(result.PaymentIntentID)
+		payment.CardLast4 = nullString(result.CardLast4)
+		payment.CardBrand = nullString(result.CardBrand)
+		payment.CompletedAt = sql.NullTime{Time: time.Now().UTC(), Valid: true}
+		payment.FailureReason = sql.NullString{}
+		payment.FailureCode = sql.NullString{}
+	} else {
+		payment.Status = PaymentStatusFailed
+		payment.FailureCode = nullString(result.ErrorCode)
+		payment.FailureReason = nullString(result.ErrorMessage)
+	}
+
+	if err := store.UpdatePayment(ctx, payment); err != nil {
+		return err
+	}
+	return nil
+}
+
+func isUniqueViolation(err error) bool {
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) {
+		return pgErr.Code == "23505"
+	}
+	return false
 }
 
 func decimalCmpPositive(amount decimal.Decimal) bool {

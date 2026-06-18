@@ -126,20 +126,14 @@ func (g *StripeGateway) ProcessPayment(request PaymentRequest) PaymentResult {
 	if !g.IsEnabled() {
 		return PaymentResultFailure("gateway_disabled", "Stripe gateway is not enabled")
 	}
-	return PaymentResult{
-		Success:         true,
-		TransactionID:   "stripe_txn_" + uuid.NewString()[:16],
-		PaymentIntentID: "stripe_pi_" + uuid.NewString()[:16],
-		Status:          "completed",
-		RawResponse:     "",
-	}
+	return PaymentResultFailure("not_implemented", "Stripe gateway is not implemented yet (deferred to PR2)")
 }
 
 func (g *StripeGateway) ProcessRefund(request RefundRequest) RefundResult {
 	if !g.IsEnabled() {
 		return RefundResultFailure("gateway_disabled", "Stripe gateway is not enabled")
 	}
-	return RefundResult{Success: true, RefundID: "stripe_re_" + uuid.NewString()[:16], Status: "completed"}
+	return RefundResultFailure("not_implemented", "Stripe gateway is not implemented yet (deferred to PR2)")
 }
 
 func (g *StripeGateway) Tokenize(request TokenizeRequest) TokenizeResult {
@@ -165,20 +159,14 @@ func (g *PayPalGateway) ProcessPayment(request PaymentRequest) PaymentResult {
 	if !g.IsEnabled() {
 		return PaymentResultFailure("gateway_disabled", "PayPal gateway is not enabled")
 	}
-	return PaymentResult{
-		Success:         true,
-		TransactionID:   "paypal_txn_" + uuid.NewString()[:16],
-		PaymentIntentID: "paypal_order_" + uuid.NewString()[:16],
-		Status:          "completed",
-		RawResponse:     "",
-	}
+	return PaymentResultFailure("not_implemented", "PayPal gateway is not implemented yet (deferred to PR2)")
 }
 
 func (g *PayPalGateway) ProcessRefund(request RefundRequest) RefundResult {
 	if !g.IsEnabled() {
 		return RefundResultFailure("gateway_disabled", "PayPal gateway is not enabled")
 	}
-	return RefundResult{Success: true, RefundID: "paypal_re_" + uuid.NewString()[:16], Status: "completed"}
+	return RefundResultFailure("not_implemented", "PayPal gateway is not implemented yet (deferred to PR2)")
 }
 
 func (g *PayPalGateway) Tokenize(request TokenizeRequest) TokenizeResult {

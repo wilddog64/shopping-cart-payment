@@ -15,6 +15,7 @@ type Config struct {
 	DBName     string
 	DBUsername string
 	DBPassword string
+	DBSSLMode  string
 
 	RabbitMQHost         string
 	RabbitMQPort         int
@@ -24,6 +25,8 @@ type Config struct {
 	RabbitMQVaultEnabled bool
 
 	PaymentGatewayDefault string
+
+	MockGatewayEnabled bool
 
 	StripeEnabled       bool
 	StripeAPIKey        string
@@ -60,24 +63,27 @@ func Load() Config {
 		DBPort:     intEnv("DB_PORT", 5432),
 		DBName:     stringEnv("DB_NAME", "payments"),
 		DBUsername: stringEnv("DB_USERNAME", "postgres"),
-		DBPassword: stringEnv("DB_PASSWORD", "changeme123"),
+		DBPassword: stringEnv("DB_PASSWORD", ""),
+		DBSSLMode:  stringEnv("DB_SSLMODE", "disable"),
 
 		RabbitMQHost:         stringEnv("RABBITMQ_HOST", "rabbitmq.shopping-cart-data.svc.cluster.local"),
 		RabbitMQPort:         intEnv("RABBITMQ_PORT", 5672),
 		RabbitMQVHost:        stringEnv("RABBITMQ_VHOST", "/"),
-		RabbitMQUsername:     stringEnv("RABBITMQ_USERNAME", "guest"),
-		RabbitMQPassword:     stringEnv("RABBITMQ_PASSWORD", "guest"),
+		RabbitMQUsername:     stringEnv("RABBITMQ_USERNAME", ""),
+		RabbitMQPassword:     stringEnv("RABBITMQ_PASSWORD", ""),
 		RabbitMQVaultEnabled: boolEnv("RABBITMQ_VAULT_ENABLED", false),
 
 		PaymentGatewayDefault: stringEnv("PAYMENT_GATEWAY_DEFAULT", "mock"),
 
-		StripeEnabled:       boolEnv("STRIPE_ENABLED", true),
-		StripeAPIKey:        stringEnv("STRIPE_API_KEY", "sk_test_xxx"),
-		StripeWebhookSecret: stringEnv("STRIPE_WEBHOOK_SECRET", "whsec_xxx"),
+		MockGatewayEnabled: boolEnv("MOCK_GATEWAY_ENABLED", true),
 
-		PayPalEnabled:      boolEnv("PAYPAL_ENABLED", true),
-		PayPalClientID:     stringEnv("PAYPAL_CLIENT_ID", "xxx"),
-		PayPalClientSecret: stringEnv("PAYPAL_CLIENT_SECRET", "xxx"),
+		StripeEnabled:       boolEnv("STRIPE_ENABLED", false),
+		StripeAPIKey:        stringEnv("STRIPE_API_KEY", ""),
+		StripeWebhookSecret: stringEnv("STRIPE_WEBHOOK_SECRET", ""),
+
+		PayPalEnabled:      boolEnv("PAYPAL_ENABLED", false),
+		PayPalClientID:     stringEnv("PAYPAL_CLIENT_ID", ""),
+		PayPalClientSecret: stringEnv("PAYPAL_CLIENT_SECRET", ""),
 		PayPalMode:         stringEnv("PAYPAL_MODE", "sandbox"),
 
 		MockGatewayDelayMS:     intEnv("MOCK_GATEWAY_DELAY_MS", 500),
@@ -100,12 +106,17 @@ func Load() Config {
 }
 
 func (c Config) DatabaseURI() string {
-	return fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
+	sslMode := c.DBSSLMode
+	if sslMode == "" {
+		sslMode = "disable"
+	}
+	return fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s",
 		url.QueryEscape(c.DBUsername),
 		url.QueryEscape(c.DBPassword),
 		c.DBHost,
 		c.DBPort,
 		c.DBName,
+		url.QueryEscape(sslMode),
 	)
 }
 

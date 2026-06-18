@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/shopspring/decimal"
 )
@@ -28,19 +29,50 @@ type paymentStore interface {
 	CreateTransaction(ctx context.Context, tx *Transaction) error
 }
 
+type dbQuerier interface {
+	Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error)
+	Query(ctx context.Context, sql string, arguments ...any) (pgx.Rows, error)
+	QueryRow(ctx context.Context, sql string, arguments ...any) pgx.Row
+}
+
 type Store struct {
-	db *pgxpool.Pool
+	pool *pgxpool.Pool
+	db   dbQuerier
 }
 
 func NewStore(db *pgxpool.Pool) *Store {
-	return &Store{db: db}
+	return &Store{pool: db, db: db}
 }
 
 func (s *Store) Ping(ctx context.Context) error {
-	if s == nil || s.db == nil {
+	if s == nil || s.pool == nil {
 		return errors.New("database is not configured")
 	}
-	return s.db.Ping(ctx)
+	return s.pool.Ping(ctx)
+}
+
+func (s *Store) RunInTx(ctx context.Context, fn func(paymentStore) error) (err error) {
+	if s == nil || s.pool == nil {
+		return errors.New("database is not configured")
+	}
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	txStore := &Store{pool: s.pool, db: tx}
+	defer func() {
+		if r := recover(); r != nil {
+			_ = tx.Rollback(ctx)
+			panic(r)
+		}
+	}()
+	if err := fn(txStore); err != nil {
+		if rbErr := tx.Rollback(ctx); rbErr != nil {
+			return rbErr
+		}
+		return err
+	}
+	return tx.Commit(ctx)
 }
 
 func (s *Store) CreatePayment(ctx context.Context, p *Payment) error {
@@ -452,9 +484,11 @@ func scanPaymentRow(row pgx.Row) (*Payment, error) {
 
 	paymentMethodID := uuid.NullUUID{}
 	if paymentMethodIDText.Valid {
-		if parsed, err := uuid.Parse(paymentMethodIDText.String); err == nil {
-			paymentMethodID = uuid.NullUUID{UUID: parsed, Valid: true}
+		parsed, err := uuid.Parse(paymentMethodIDText.String)
+		if err != nil {
+			return nil, fmt.Errorf("parse payment_method_id: %w", err)
 		}
+		paymentMethodID = uuid.NullUUID{UUID: parsed, Valid: true}
 	}
 
 	return &Payment{

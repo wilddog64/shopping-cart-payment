@@ -32,9 +32,6 @@ func NewRouter(defaultGatewayName string, gateways ...PaymentGateway) *Router {
 		}
 		router.gateways[strings.ToLower(gateway.GetName())] = gateway
 	}
-	if _, ok := router.gateways[strings.ToLower(router.defaultGatewayName)]; !ok {
-		router.defaultGatewayName = "mock"
-	}
 	return router
 }
 

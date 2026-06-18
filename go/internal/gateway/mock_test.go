@@ -14,7 +14,7 @@ func TestMockGatewaySuccessAndFailurePaths(t *testing.T) {
 			CustomerID: "customer-1",
 			Amount:     decimal.RequireFromString("12.3400"),
 			Currency:   "USD",
-			CardNumber: "4242424242424242",
+			CardNumber: "tok_test_4242",
 		})
 		if !result.Success {
 			t.Fatalf("expected success result, got %+v", result)
@@ -44,6 +44,24 @@ func TestMockGatewaySuccessAndFailurePaths(t *testing.T) {
 		}
 		if result := gw.ProcessRefund(RefundRequest{}); result.Success {
 			t.Fatalf("expected refund failure, got %+v", result)
+		}
+	})
+
+	t.Run("stripe and paypal stubs fail fast", func(t *testing.T) {
+		stripe := NewStripeGateway(true)
+		if result := stripe.ProcessPayment(PaymentRequest{}); result.Success || result.ErrorCode != "not_implemented" {
+			t.Fatalf("stripe payment result = %+v, want not_implemented failure", result)
+		}
+		if result := stripe.ProcessRefund(RefundRequest{}); result.Success || result.ErrorCode != "not_implemented" {
+			t.Fatalf("stripe refund result = %+v, want not_implemented failure", result)
+		}
+
+		paypal := NewPayPalGateway(true)
+		if result := paypal.ProcessPayment(PaymentRequest{}); result.Success || result.ErrorCode != "not_implemented" {
+			t.Fatalf("paypal payment result = %+v, want not_implemented failure", result)
+		}
+		if result := paypal.ProcessRefund(RefundRequest{}); result.Success || result.ErrorCode != "not_implemented" {
+			t.Fatalf("paypal refund result = %+v, want not_implemented failure", result)
 		}
 	})
 }
