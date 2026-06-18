@@ -208,7 +208,7 @@ ORDER BY created_at DESC`, customerID)
 
 	var payments []*Payment
 	for rows.Next() {
-		payment, err := scanPaymentRows(rows)
+		payment, err := scanPaymentRow(rows)
 		if err != nil {
 			return nil, err
 		}
@@ -342,7 +342,7 @@ ORDER BY created_at DESC`, paymentID)
 
 	var refunds []*Refund
 	for rows.Next() {
-		refund, err := scanRefundRows(rows)
+		refund, err := scanRefundRow(rows)
 		if err != nil {
 			return nil, err
 		}
@@ -482,17 +482,6 @@ func scanPaymentRow(row pgx.Row) (*Payment, error) {
 	}, nil
 }
 
-func scanPaymentRows(rows pgx.Rows) (*Payment, error) {
-	if !rows.Next() {
-		return nil, pgx.ErrNoRows
-	}
-	payment, err := scanPaymentRow(rows)
-	if err != nil {
-		return nil, err
-	}
-	return payment, nil
-}
-
 func scanRefundRow(row pgx.Row) (*Refund, error) {
 	var (
 		id              uuid.UUID
@@ -551,17 +540,6 @@ func scanRefundRow(row pgx.Row) (*Refund, error) {
 		CorrelationID:   correlationID,
 		InitiatedBy:     initiatedBy,
 	}, nil
-}
-
-func scanRefundRows(rows pgx.Rows) (*Refund, error) {
-	if !rows.Next() {
-		return nil, pgx.ErrNoRows
-	}
-	refund, err := scanRefundRow(rows)
-	if err != nil {
-		return nil, err
-	}
-	return refund, nil
 }
 
 func nullStringArg(ns sql.NullString) any {
