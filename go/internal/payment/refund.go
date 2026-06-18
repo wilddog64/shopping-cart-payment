@@ -15,11 +15,11 @@ import (
 )
 
 type RefundService struct {
-	store  *Store
+	store  paymentStore
 	router *gateway.Router
 }
 
-func NewRefundService(store *Store, router *gateway.Router) *RefundService {
+func NewRefundService(store paymentStore, router *gateway.Router) *RefundService {
 	return &RefundService{store: store, router: router}
 }
 

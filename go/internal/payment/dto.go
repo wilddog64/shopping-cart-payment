@@ -36,27 +36,27 @@ type RefundRequest struct {
 }
 
 type PaymentResponse struct {
-	ID            uuid.UUID       `json:"id"`
-	OrderID       string          `json:"orderId"`
-	CustomerID    string          `json:"customerId"`
-	Amount        decimal.Decimal `json:"amount"`
-	Currency      string          `json:"currency"`
-	Status        PaymentStatus   `json:"status"`
-	Gateway       string          `json:"gateway"`
-	CardLast4     *string         `json:"cardLast4"`
-	CardBrand     *string         `json:"cardBrand"`
-	FailureReason *string         `json:"failureReason"`
-	CreatedAt     *string         `json:"createdAt"`
-	CompletedAt   *string         `json:"completedAt"`
+	ID            uuid.UUID     `json:"id"`
+	OrderID       string        `json:"orderId"`
+	CustomerID    string        `json:"customerId"`
+	Amount        Amount        `json:"amount"`
+	Currency      string        `json:"currency"`
+	Status        PaymentStatus `json:"status"`
+	Gateway       string        `json:"gateway"`
+	CardLast4     *string       `json:"cardLast4"`
+	CardBrand     *string       `json:"cardBrand"`
+	FailureReason *string       `json:"failureReason"`
+	CreatedAt     *string       `json:"createdAt"`
+	CompletedAt   *string       `json:"completedAt"`
 }
 
 type RefundResponse struct {
-	ID        uuid.UUID       `json:"id"`
-	PaymentID uuid.UUID       `json:"paymentId"`
-	Amount    decimal.Decimal `json:"amount"`
-	Currency  string          `json:"currency"`
-	Status    RefundStatus    `json:"status"`
-	Reason    *string         `json:"reason"`
+	ID        uuid.UUID    `json:"id"`
+	PaymentID uuid.UUID    `json:"paymentId"`
+	Amount    Amount       `json:"amount"`
+	Currency  string       `json:"currency"`
+	Status    RefundStatus `json:"status"`
+	Reason    *string      `json:"reason"`
 }
 
 func PaymentResponseFrom(p *Payment) PaymentResponse {
@@ -79,7 +79,7 @@ func PaymentResponseFrom(p *Payment) PaymentResponse {
 		ID:            p.ID,
 		OrderID:       p.OrderID,
 		CustomerID:    p.CustomerID,
-		Amount:        p.Amount,
+		Amount:        Amount(p.Amount),
 		Currency:      p.Currency,
 		Status:        p.Status,
 		Gateway:       p.Gateway,
@@ -100,7 +100,7 @@ func RefundResponseFrom(r *Refund) RefundResponse {
 	return RefundResponse{
 		ID:        r.ID,
 		PaymentID: r.PaymentID,
-		Amount:    r.Amount,
+		Amount:    Amount(r.Amount),
 		Currency:  r.Currency,
 		Status:    r.Status,
 		Reason:    reason,

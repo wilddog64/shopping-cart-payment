@@ -13,6 +13,21 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+type paymentStore interface {
+	CreatePayment(ctx context.Context, p *Payment) error
+	UpdatePayment(ctx context.Context, p *Payment) error
+	GetPayment(ctx context.Context, id uuid.UUID) (*Payment, error)
+	GetPaymentByOrderID(ctx context.Context, orderID string) (*Payment, error)
+	GetPaymentByIdempotencyKey(ctx context.Context, idempotencyKey string) (*Payment, error)
+	GetPaymentsByCustomer(ctx context.Context, customerID string) ([]*Payment, error)
+	CreateRefund(ctx context.Context, refund *Refund) error
+	UpdateRefund(ctx context.Context, refund *Refund) error
+	GetRefund(ctx context.Context, id uuid.UUID) (*Refund, error)
+	GetRefundByCorrelationID(ctx context.Context, correlationID string) (*Refund, error)
+	GetRefundsByPayment(ctx context.Context, paymentID uuid.UUID) ([]*Refund, error)
+	CreateTransaction(ctx context.Context, tx *Transaction) error
+}
+
 type Store struct {
 	db *pgxpool.Pool
 }

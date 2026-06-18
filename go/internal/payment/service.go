@@ -15,11 +15,11 @@ import (
 )
 
 type PaymentService struct {
-	store  *Store
+	store  paymentStore
 	router *gateway.Router
 }
 
-func NewPaymentService(store *Store, router *gateway.Router) *PaymentService {
+func NewPaymentService(store paymentStore, router *gateway.Router) *PaymentService {
 	return &PaymentService{store: store, router: router}
 }
 
