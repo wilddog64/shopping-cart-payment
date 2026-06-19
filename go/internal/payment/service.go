@@ -99,6 +99,10 @@ func (s *PaymentService) ProcessPayment(ctx context.Context, req ProcessPaymentR
 	request.CardCVC = ""
 	request.CardExpMonth = ""
 	request.CardExpYear = ""
+	req.CardNumber = ""
+	req.CardCvc = ""
+	req.CardExpMonth = ""
+	req.CardExpYear = ""
 	persist := func(store paymentStore) error {
 		return persistProcessedPayment(ctx, store, payment, correlationID, result, now)
 	}
