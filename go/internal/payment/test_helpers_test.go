@@ -96,6 +96,10 @@ func (s *fakeStore) GetPayment(_ context.Context, id uuid.UUID) (*Payment, error
 	return payment, nil
 }
 
+func (s *fakeStore) GetPaymentForUpdate(ctx context.Context, id uuid.UUID) (*Payment, error) {
+	return s.GetPayment(ctx, id)
+}
+
 func (s *fakeStore) GetPaymentByOrderID(_ context.Context, orderID string) (*Payment, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()

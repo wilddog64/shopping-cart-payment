@@ -44,15 +44,6 @@ func (s *RefundService) ProcessRefund(ctx context.Context, paymentID uuid.UUID, 
 		return nil, ErrRefundNotAllowed
 	}
 
-	totalRefunded, err := s.GetTotalRefunded(ctx, paymentID)
-	if err != nil {
-		return nil, err
-	}
-	remaining := payment.Amount.Sub(totalRefunded)
-	if amount.Cmp(remaining) > 0 {
-		return nil, ErrRefundExceedsRemaining
-	}
-
 	gatewayImpl, err := s.router.GetGateway(payment.Gateway)
 	if err != nil {
 		return nil, err
@@ -70,20 +61,6 @@ func (s *RefundService) ProcessRefund(ctx context.Context, paymentID uuid.UUID, 
 		CorrelationID: nullString(correlationID),
 		CreatedAt:     now,
 	}
-	if err := s.store.CreateRefund(ctx, refund); err != nil {
-		return nil, err
-	}
-
-	payment.Status = PaymentStatusRefundPending
-	if err := s.store.UpdatePayment(ctx, payment); err != nil {
-		return nil, err
-	}
-
-	refund.Status = RefundStatusProcessing
-	refund.ProcessedAt = sql.NullTime{Time: time.Now().UTC(), Valid: true}
-	if err := s.store.UpdateRefund(ctx, refund); err != nil {
-		return nil, err
-	}
 
 	gatewayRequest := gateway.RefundRequest{
 		PaymentTransactionID: payment.GatewayTransactionID.String,
@@ -93,52 +70,101 @@ func (s *RefundService) ProcessRefund(ctx context.Context, paymentID uuid.UUID, 
 		Reason:               reason,
 		CorrelationID:        correlationID,
 	}
-	result := gatewayImpl.ProcessRefund(gatewayRequest)
 
-	if err := s.store.CreateTransaction(ctx, &Transaction{
-		ID:                   uuid.New(),
-		PaymentID:            paymentID,
-		RefundID:             uuid.NullUUID{UUID: refund.ID, Valid: true},
-		Type:                 TransactionTypeRefund,
-		Amount:               amount,
-		Currency:             payment.Currency,
-		Success:              result.Success,
-		GatewayTransactionID: nullString(result.RefundID),
-		GatewayResponse:      nullString(result.RawResponse),
-		GatewayErrorCode:     nullString(result.ErrorCode),
-		GatewayErrorMessage:  nullString(result.ErrorMessage),
-		CreatedAt:            time.Now().UTC(),
-		CorrelationID:        nullString(correlationID),
-	}); err != nil {
-		return nil, err
+	persist := func(store paymentStore) error {
+		locked, err := store.GetPaymentForUpdate(ctx, paymentID)
+		if err != nil {
+			return err
+		}
+		if locked.Status != PaymentStatusCompleted && locked.Status != PaymentStatusRefundPending {
+			return ErrRefundNotAllowed
+		}
+
+		existingRefunds, err := store.GetRefundsByPayment(ctx, paymentID)
+		if err != nil {
+			return err
+		}
+		totalRefunded := decimal.Zero
+		for _, r := range existingRefunds {
+			if r.Status == RefundStatusCompleted {
+				totalRefunded = totalRefunded.Add(r.Amount)
+			}
+		}
+		remaining := locked.Amount.Sub(totalRefunded)
+		if amount.Cmp(remaining) > 0 {
+			return ErrRefundExceedsRemaining
+		}
+
+		if err := store.CreateRefund(ctx, refund); err != nil {
+			return err
+		}
+
+		locked.Status = PaymentStatusRefundPending
+		if err := store.UpdatePayment(ctx, locked); err != nil {
+			return err
+		}
+
+		refund.Status = RefundStatusProcessing
+		refund.ProcessedAt = sql.NullTime{Time: time.Now().UTC(), Valid: true}
+		if err := store.UpdateRefund(ctx, refund); err != nil {
+			return err
+		}
+
+		result := gatewayImpl.ProcessRefund(gatewayRequest)
+
+		if err := store.CreateTransaction(ctx, &Transaction{
+			ID:                   uuid.New(),
+			PaymentID:            paymentID,
+			RefundID:             uuid.NullUUID{UUID: refund.ID, Valid: true},
+			Type:                 TransactionTypeRefund,
+			Amount:               amount,
+			Currency:             payment.Currency,
+			Success:              result.Success,
+			GatewayTransactionID: nullString(result.RefundID),
+			GatewayResponse:      nullString(result.RawResponse),
+			GatewayErrorCode:     nullString(result.ErrorCode),
+			GatewayErrorMessage:  nullString(result.ErrorMessage),
+			CreatedAt:            time.Now().UTC(),
+			CorrelationID:        nullString(correlationID),
+		}); err != nil {
+			return err
+		}
+
+		if result.Success {
+			refund.Status = RefundStatusCompleted
+			refund.GatewayRefundID = nullString(result.RefundID)
+			refund.CompletedAt = sql.NullTime{Time: time.Now().UTC(), Valid: true}
+			refund.FailureReason = sql.NullString{}
+			refund.FailureCode = sql.NullString{}
+			if amount.Cmp(remaining) >= 0 {
+				locked.Status = PaymentStatusRefunded
+			} else {
+				locked.Status = PaymentStatusCompleted
+			}
+		} else {
+			refund.Status = RefundStatusFailed
+			refund.FailureCode = nullString(result.ErrorCode)
+			refund.FailureReason = nullString(result.ErrorMessage)
+			locked.Status = PaymentStatusRefundFailed
+		}
+
+		if err := store.UpdatePayment(ctx, locked); err != nil {
+			return err
+		}
+		if err := store.UpdateRefund(ctx, refund); err != nil {
+			return err
+		}
+		return nil
 	}
 
-	if result.Success {
-		refund.Status = RefundStatusCompleted
-		refund.GatewayRefundID = nullString(result.RefundID)
-		refund.CompletedAt = sql.NullTime{Time: time.Now().UTC(), Valid: true}
-		refund.FailureReason = sql.NullString{}
-		refund.FailureCode = sql.NullString{}
-		if amount.Cmp(remaining) >= 0 {
-			payment.Status = PaymentStatusRefunded
-		} else {
-			payment.Status = PaymentStatusCompleted
-		}
-		if err := s.store.UpdatePayment(ctx, payment); err != nil {
+	if runner, ok := s.store.(paymentTransactionRunner); ok {
+		if err := runner.RunInTx(ctx, persist); err != nil {
 			return nil, err
 		}
 	} else {
-		refund.Status = RefundStatusFailed
-		refund.FailureCode = nullString(result.ErrorCode)
-		refund.FailureReason = nullString(result.ErrorMessage)
-		payment.Status = PaymentStatusRefundFailed
-		if err := s.store.UpdatePayment(ctx, payment); err != nil {
+		if err := persist(s.store); err != nil {
 			return nil, err
 		}
-	}
-
-	if err := s.store.UpdateRefund(ctx, refund); err != nil {
-		return nil, err
 	}
 	return refund, nil
 }

@@ -113,12 +113,16 @@ func RequestLogger(logger *zap.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 		c.Next()
-		logger.Info("request",
+		fields := []zap.Field{
 			zap.String("method", c.Request.Method),
 			zap.String("path", c.Request.URL.Path),
 			zap.Int("status", c.Writer.Status()),
 			zap.Duration("duration", time.Since(start)),
 			zap.String("client_ip", c.ClientIP()),
-		)
+		}
+		if len(c.Errors) > 0 {
+			fields = append(fields, zap.String("error", c.Errors.String()))
+		}
+		logger.Info("request", fields...)
 	}
 }

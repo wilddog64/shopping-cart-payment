@@ -18,6 +18,7 @@ type paymentStore interface {
 	CreatePayment(ctx context.Context, p *Payment) error
 	UpdatePayment(ctx context.Context, p *Payment) error
 	GetPayment(ctx context.Context, id uuid.UUID) (*Payment, error)
+	GetPaymentForUpdate(ctx context.Context, id uuid.UUID) (*Payment, error)
 	GetPaymentByOrderID(ctx context.Context, orderID string) (*Payment, error)
 	GetPaymentByIdempotencyKey(ctx context.Context, idempotencyKey string) (*Payment, error)
 	GetPaymentsByCustomer(ctx context.Context, customerID string) ([]*Payment, error)
@@ -192,6 +193,19 @@ SELECT
     created_at, processed_at, completed_at, updated_at, correlation_id, idempotency_key
 FROM payments
 WHERE id = $1`, id)
+	return scanPaymentRow(row)
+}
+
+func (s *Store) GetPaymentForUpdate(ctx context.Context, id uuid.UUID) (*Payment, error) {
+	row := s.db.QueryRow(ctx, `
+SELECT
+    id, order_id, customer_id, amount::text, currency, status, gateway,
+    gateway_transaction_id, gateway_payment_intent_id, payment_method_id::text,
+    card_last4, card_brand, metadata, failure_reason, failure_code,
+    created_at, processed_at, completed_at, updated_at, correlation_id, idempotency_key
+FROM payments
+WHERE id = $1
+FOR UPDATE`, id)
 	return scanPaymentRow(row)
 }
 

@@ -15,6 +15,7 @@ data:
 
   # Payment Gateway Configuration
   payment.gateway.default: "mock"
+  mock.gateway.enabled: "true"
   stripe.enabled: "false"
   paypal.enabled: "false"
 

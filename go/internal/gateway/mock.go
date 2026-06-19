@@ -9,6 +9,11 @@ import (
 	"github.com/google/uuid"
 )
 
+const (
+	mockDeclineToken           = "tok_mock_decline"
+	mockInsufficientFundsToken = "tok_mock_insufficient_funds"
+)
+
 type MockGateway struct {
 	enabled     bool
 	delayMs     int
@@ -35,9 +40,9 @@ func (g *MockGateway) ProcessPayment(request PaymentRequest) PaymentResult {
 	g.simulateDelay()
 	if request.CardNumber != "" {
 		switch request.CardNumber {
-		case "4000000000000002":
+		case mockDeclineToken:
 			return PaymentResultFailure("card_declined", "Your card was declined")
-		case "4000000000009995":
+		case mockInsufficientFundsToken:
 			return PaymentResultFailure("insufficient_funds", "Insufficient funds")
 		}
 	}

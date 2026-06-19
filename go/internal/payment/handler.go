@@ -185,6 +185,9 @@ func (h *Handler) abortWithError(c *gin.Context, apiErr *APIError) {
 	if apiErr == nil {
 		apiErr = &APIError{Status: http.StatusInternalServerError, Code: "INTERNAL_SERVER_ERROR", Message: "unknown error"}
 	}
+	if apiErr.cause != nil {
+		_ = c.Error(apiErr.cause)
+	}
 	c.AbortWithStatusJSON(apiErr.Status, gin.H{
 		"code":    apiErr.Code,
 		"message": apiErr.Message,

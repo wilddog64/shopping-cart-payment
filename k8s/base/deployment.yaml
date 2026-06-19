@@ -89,6 +89,11 @@ spec:
             configMapKeyRef:
               name: payment-service-config
               key: payment.gateway.default
+        - name: MOCK_GATEWAY_ENABLED
+          valueFrom:
+            configMapKeyRef:
+              name: payment-service-config
+              key: mock.gateway.enabled
         - name: STRIPE_ENABLED
           valueFrom:
             configMapKeyRef:

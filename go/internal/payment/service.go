@@ -29,11 +29,6 @@ type paymentTransactionRunner interface {
 }
 
 func (s *PaymentService) ProcessPayment(ctx context.Context, req ProcessPaymentRequest, correlationID, idempotencyKey string) (*Payment, error) {
-	gatewayImpl, err := s.router.GetGatewayOrDefault(req.Gateway)
-	if err != nil {
-		return nil, err
-	}
-
 	if strings.TrimSpace(idempotencyKey) != "" {
 		if existing, err := s.store.GetPaymentByIdempotencyKey(ctx, idempotencyKey); err == nil {
 			return existing, nil
@@ -47,6 +42,11 @@ func (s *PaymentService) ProcessPayment(ctx context.Context, req ProcessPaymentR
 			return existing, nil
 		}
 	} else if !errors.Is(err, pgx.ErrNoRows) {
+		return nil, err
+	}
+
+	gatewayImpl, err := s.router.GetGatewayOrDefault(req.Gateway)
+	if err != nil {
 		return nil, err
 	}
 
@@ -95,7 +95,7 @@ func (s *PaymentService) ProcessPayment(ctx context.Context, req ProcessPaymentR
 
 	result := gatewayImpl.ProcessPayment(request)
 	persist := func(store paymentStore) error {
-		return persistProcessedPayment(ctx, store, payment, req, correlationID, result, now)
+		return persistProcessedPayment(ctx, store, payment, correlationID, result, now)
 	}
 
 	var persistErr error
@@ -161,7 +161,7 @@ func nullString(value string) sql.NullString {
 	return sql.NullString{String: value, Valid: true}
 }
 
-func persistProcessedPayment(ctx context.Context, store paymentStore, payment *Payment, req ProcessPaymentRequest, correlationID string, result gateway.PaymentResult, now time.Time) error {
+func persistProcessedPayment(ctx context.Context, store paymentStore, payment *Payment, correlationID string, result gateway.PaymentResult, now time.Time) error {
 	if err := store.CreatePayment(ctx, payment); err != nil {
 		return err
 	}
@@ -176,8 +176,8 @@ func persistProcessedPayment(ctx context.Context, store paymentStore, payment *P
 		ID:                   uuid.New(),
 		PaymentID:            payment.ID,
 		Type:                 TransactionTypeCharge,
-		Amount:               req.Amount,
-		Currency:             strings.ToUpper(req.Currency),
+		Amount:               payment.Amount,
+		Currency:             payment.Currency,
 		Success:              result.Success,
 		GatewayTransactionID: nullString(result.TransactionID),
 		GatewayResponse:      nullString(result.RawResponse),

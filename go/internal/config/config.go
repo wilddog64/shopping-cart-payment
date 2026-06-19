@@ -44,7 +44,6 @@ type Config struct {
 	EncryptionKey     string
 
 	RateLimitEnabled   bool
-	RateLimitPerMinute int
 	RateLimitPerSecond int
 	RateLimitBurst     int
 
@@ -75,7 +74,7 @@ func Load() Config {
 
 		PaymentGatewayDefault: stringEnv("PAYMENT_GATEWAY_DEFAULT", "mock"),
 
-		MockGatewayEnabled: boolEnv("MOCK_GATEWAY_ENABLED", true),
+		MockGatewayEnabled: boolEnv("MOCK_GATEWAY_ENABLED", false),
 
 		StripeEnabled:       boolEnv("STRIPE_ENABLED", false),
 		StripeAPIKey:        stringEnv("STRIPE_API_KEY", ""),
@@ -93,7 +92,6 @@ func Load() Config {
 		EncryptionKey:     stringEnv("ENCRYPTION_KEY", ""),
 
 		RateLimitEnabled:   boolEnv("RATE_LIMIT_ENABLED", true),
-		RateLimitPerMinute: intEnv("RATE_LIMIT_PER_MINUTE", 60),
 		RateLimitPerSecond: intEnv("RATE_LIMIT_PER_SECOND", 10),
 		RateLimitBurst:     intEnv("RATE_LIMIT_BURST", 20),
 

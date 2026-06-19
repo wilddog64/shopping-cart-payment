@@ -3,12 +3,14 @@ package payment
 import (
 	"errors"
 	"fmt"
+	"strings"
 )
 
 type APIError struct {
 	Status  int    `json:"-"`
 	Code    string `json:"code"`
 	Message string `json:"message"`
+	cause   error  `json:"-"`
 }
 
 func (e *APIError) Error() string {
@@ -46,7 +48,11 @@ func APIErrorFromErr(err error) *APIError {
 		return BadRequest("REFUND_NOT_ALLOWED", err.Error())
 	case errors.Is(err, ErrRefundExceedsRemaining):
 		return BadRequest("REFUND_AMOUNT_TOO_LARGE", err.Error())
+	case strings.Contains(err.Error(), "unknown gateway"):
+		return BadRequest("GATEWAY_UNKNOWN", err.Error())
+	case strings.Contains(err.Error(), "gateway is not enabled"):
+		return BadRequest("GATEWAY_NOT_ENABLED", err.Error())
 	default:
-		return &APIError{Status: 500, Code: "INTERNAL_SERVER_ERROR", Message: err.Error()}
+		return &APIError{Status: 500, Code: "INTERNAL_SERVER_ERROR", Message: "An internal error occurred", cause: err}
 	}
 }
