@@ -19,6 +19,10 @@ data:
   stripe.enabled: "false"
   paypal.enabled: "false"
 
+  # Database
+  # in-cluster Postgres has no native TLS; transport is secured by Istio mTLS (dev)
+  db.sslmode: "disable"
+
   # Rate Limiting
   rate-limit.enabled: "true"
   rate-limit.requests-per-minute: "60"

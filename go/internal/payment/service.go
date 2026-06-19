@@ -56,12 +56,13 @@ func (s *PaymentService) ProcessPayment(ctx context.Context, req ProcessPaymentR
 	}
 
 	now := time.Now().UTC()
+	currency := strings.ToUpper(strings.TrimSpace(req.Currency))
 	payment := &Payment{
 		ID:              uuid.New(),
 		OrderID:         req.OrderID,
 		CustomerID:      req.CustomerID,
 		Amount:          req.Amount,
-		Currency:        strings.ToUpper(req.Currency),
+		Currency:        currency,
 		Status:          PaymentStatusPending,
 		Gateway:         gatewayImpl.GetName(),
 		PaymentMethodID: paymentMethodID,
@@ -75,7 +76,7 @@ func (s *PaymentService) ProcessPayment(ctx context.Context, req ProcessPaymentR
 		OrderID:             req.OrderID,
 		CustomerID:          req.CustomerID,
 		Amount:              req.Amount,
-		Currency:            strings.ToUpper(req.Currency),
+		Currency:            currency,
 		PaymentMethodToken:  req.PaymentMethodID,
 		CardNumber:          req.CardNumber,
 		CardExpMonth:        req.CardExpMonth,
@@ -94,6 +95,10 @@ func (s *PaymentService) ProcessPayment(ctx context.Context, req ProcessPaymentR
 	}
 
 	result := gatewayImpl.ProcessPayment(request)
+	request.CardNumber = ""
+	request.CardCVC = ""
+	request.CardExpMonth = ""
+	request.CardExpYear = ""
 	persist := func(store paymentStore) error {
 		return persistProcessedPayment(ctx, store, payment, correlationID, result, now)
 	}

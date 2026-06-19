@@ -69,7 +69,7 @@ func (s *Store) RunInTx(ctx context.Context, fn func(paymentStore) error) (err e
 	}()
 	if err := fn(txStore); err != nil {
 		if rbErr := tx.Rollback(ctx); rbErr != nil {
-			return rbErr
+			return fmt.Errorf("%w (additionally, rollback failed: %v)", err, rbErr)
 		}
 		return err
 	}

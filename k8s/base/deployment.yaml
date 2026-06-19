@@ -50,6 +50,11 @@ spec:
           value: "5432"
         - name: DB_NAME
           value: "payments"
+        - name: DB_SSLMODE
+          valueFrom:
+            configMapKeyRef:
+              name: payment-service-config
+              key: db.sslmode
         - name: DB_USERNAME
           valueFrom:
             secretKeyRef:

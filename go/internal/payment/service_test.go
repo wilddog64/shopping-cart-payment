@@ -33,6 +33,9 @@ func TestPaymentServiceProcessPaymentSuccessAndIdempotency(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ProcessPayment success: %v", err)
 	}
+	if payment.Currency != "USD" {
+		t.Fatalf("currency = %s, want USD", payment.Currency)
+	}
 	if payment.Status != PaymentStatusCompleted {
 		t.Fatalf("status = %s, want %s", payment.Status, PaymentStatusCompleted)
 	}

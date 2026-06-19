@@ -62,15 +62,6 @@ func (s *RefundService) ProcessRefund(ctx context.Context, paymentID uuid.UUID, 
 		CreatedAt:     now,
 	}
 
-	gatewayRequest := gateway.RefundRequest{
-		PaymentTransactionID: payment.GatewayTransactionID.String,
-		PaymentIntentID:      payment.GatewayPaymentIntentID.String,
-		Amount:               amount,
-		Currency:             payment.Currency,
-		Reason:               reason,
-		CorrelationID:        correlationID,
-	}
-
 	persist := func(store paymentStore) error {
 		locked, err := store.GetPaymentForUpdate(ctx, paymentID)
 		if err != nil {
@@ -110,6 +101,14 @@ func (s *RefundService) ProcessRefund(ctx context.Context, paymentID uuid.UUID, 
 			return err
 		}
 
+		gatewayRequest := gateway.RefundRequest{
+			PaymentTransactionID: locked.GatewayTransactionID.String,
+			PaymentIntentID:      locked.GatewayPaymentIntentID.String,
+			Amount:               amount,
+			Currency:             locked.Currency,
+			Reason:               reason,
+			CorrelationID:        correlationID,
+		}
 		result := gatewayImpl.ProcessRefund(gatewayRequest)
 
 		if err := store.CreateTransaction(ctx, &Transaction{
