@@ -15,8 +15,13 @@ data:
 
   # Payment Gateway Configuration
   payment.gateway.default: "mock"
+  mock.gateway.enabled: "true"
   stripe.enabled: "false"
   paypal.enabled: "false"
+
+  # Database
+  # in-cluster Postgres has no native TLS; transport is secured by Istio mTLS (dev)
+  db.sslmode: "disable"
 
   # Rate Limiting
   rate-limit.enabled: "true"

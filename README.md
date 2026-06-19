@@ -108,8 +108,11 @@ k8s/              # Deployment manifests
 - **[Troubleshooting Guide](docs/troubleshooting/README.md)** — GitHub Packages auth, namespace isolation, Vault/ESO sync, encryption tips.
 
 ### Issue Logs
-- **[Local Java version mismatch](docs/issues/2026-03-14-local-java-version-mismatch.md)** — CI instructions for Java alignment.
-- **[CI Maven wrapper/GitHub Packages fix](docs/issues/2026-03-17-ci-maven-wrapper-fix.md)** — Dockerfile + secret setup for package downloads.
+- **[Copilot Review Findings — PR #23 (Go rewrite PR1 hardening)](docs/issues/2026-06-18-copilot-pr23-review-findings.md)** — Go rewrite PR1 hardening: secret defaults, fail-fast crypto/gateways, DB transaction, scale validation, PAN scrub; 2 declined for contract preservation.
+- **[Copilot Review Findings — PR #19 (fix/oidc-issuer-keycloak)](docs/issues/2026-05-22-copilot-pr19-review-findings.md)** — earlier Copilot review findings.
+- **[Issue: Payment Service Has No Rate Limiting](docs/issues/2026-03-18-rate-limit-missing.md)** — rate limiter gap notes.
+- **[Issue: Multi-arch workflow pin update](docs/issues/2026-03-17-multiarch-workflow-pin.md)** — GitHub Actions cross-arch build pinning notes.
+- **[CI Failure: Maven Wrapper Incompatible with JDK 21 Alpine](docs/issues/2026-03-17-ci-maven-wrapper-fix.md)** — Dockerfile + secret setup for package downloads.
 
 ---
 
