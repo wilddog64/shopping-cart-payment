@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Added
+- `.github/dependabot.yml`: Dependabot version + security updates for Maven dependencies, Docker base images, and GitHub Actions (weekly schedule; minor/patch grouped, majors separate) — closes the first-mile CVE gap so an advisory-flagged app dependency opens an update PR that CI builds into a clean image
 - Go rewrite PR1 follow-ups: add unit and integration tests, CI gates, and a JSON-number amount shape for payment/refund responses under `go/`. The Go payment service remains side-by-side with the Java service.
 - `.githooks/pre-push`: pre-push hook to block accidental direct pushes from feature branches to main; bypass with `ALLOW_MAIN_PUSH=1`
 
