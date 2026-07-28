@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Added
+- `.github/dependabot.yml`: Dependabot scheduled version updates for Maven dependencies, Docker base images, and GitHub Actions (weekly; minor/patch grouped, majors separate). Repository-level Dependabot security updates (immediate advisory-triggered PRs) are enabled separately as a repo setting — together they close the first-mile CVE gap so a flagged app dependency opens an update PR that CI builds into a clean image
 - Go rewrite PR1 follow-ups: add unit and integration tests, CI gates, and a JSON-number amount shape for payment/refund responses under `go/`. The Go payment service remains side-by-side with the Java service.
 - `.githooks/pre-push`: pre-push hook to block accidental direct pushes from feature branches to main; bypass with `ALLOW_MAIN_PUSH=1`
 
