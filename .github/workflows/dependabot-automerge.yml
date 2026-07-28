@@ -1,25 +1,31 @@
 name: Dependabot auto-merge
 
-on: pull_request_target
+on:
+  pull_request_target:
+    branches: [main]
 
-permissions:
-  contents: write
-  pull-requests: write
+permissions: {}
 
 jobs:
   automerge:
-    # only Dependabot's own PRs
-    if: ${{ github.actor == 'dependabot[bot]' }}
+    # only Dependabot's own PRs — gate on the PR author (robust across reopened/edited events, unlike github.actor)
+    if: ${{ github.event.pull_request.user.login == 'dependabot[bot]' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      security-events: read
     steps:
       - name: Fetch Dependabot metadata
         id: meta
         uses: dependabot/fetch-metadata@d7267f607e9d3fb96fc2fbe83e0af444713e90b7 # v2.3.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          alert-lookup: true
 
       - name: Enable auto-merge for minor/patch and security updates
-        # semver-minor OR semver-patch, OR any PR flagged as a security update
+        # semver-minor OR semver-patch, OR any Dependabot security update (open alert) regardless of semver;
+        # non-security major bumps fall through → left open for review
         if: >-
           steps.meta.outputs.update-type == 'version-update:semver-minor' ||
           steps.meta.outputs.update-type == 'version-update:semver-patch' ||

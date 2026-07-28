@@ -3,7 +3,7 @@
 ## [Unreleased]
 
 ### Added
-- `.github/workflows/dependabot-automerge.yml`: auto-merge Dependabot minor/patch and security PRs via `gh pr merge --auto --squash` once required CI checks pass; major bumps fall through and stay open for review (`dependabot/fetch-metadata` pinned to v2.3.0; `pull_request_target` with no PR-head checkout)
+- `.github/workflows/dependabot-automerge.yml`: auto-merge Dependabot minor/patch version updates and all security updates (any semver, via `alert-lookup`) with `gh pr merge --auto --squash` once required CI checks pass; **non-security** major bumps stay open for review (`dependabot/fetch-metadata` pinned to v2.3.0; `pull_request_target` scoped to `main`, job-level least-privilege permissions, gated on the PR author, no PR-head checkout)
 - `.github/dependabot.yml`: Dependabot scheduled version updates for Maven dependencies, Docker base images, and GitHub Actions (weekly; minor/patch grouped, majors separate). Repository-level Dependabot security updates (immediate advisory-triggered PRs) are enabled separately as a repo setting — together they close the first-mile CVE gap so a flagged app dependency opens an update PR that CI builds into a clean image
 - Go rewrite PR1 follow-ups: add unit and integration tests, CI gates, and a JSON-number amount shape for payment/refund responses under `go/`. The Go payment service remains side-by-side with the Java service.
 - `.githooks/pre-push`: pre-push hook to block accidental direct pushes from feature branches to main; bypass with `ALLOW_MAIN_PUSH=1`
