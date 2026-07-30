@@ -127,7 +127,7 @@ func TestPaymentServiceProcessPaymentReturnsExistingOnUniqueViolation(t *testing
 		CompletedAt: sqlNullTime(timeNowUTC()),
 	}
 	existing.IdempotencyKey = sqlNullString("idem-race")
-	if err := store.fakeStore.CreatePayment(context.Background(), existing); err != nil {
+	if err := store.CreatePayment(context.Background(), existing); err != nil {
 		t.Fatalf("seed existing payment: %v", err)
 	}
 
