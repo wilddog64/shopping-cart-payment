@@ -22,8 +22,8 @@
         <rabbitmq-client.version>1.0.0-SNAPSHOT</rabbitmq-client.version>
         <stripe.version>24.0.0</stripe.version>
         <paypal.version>2.0.0</paypal.version>
-        <bucket4j.version>8.7.0</bucket4j.version>
-        <testcontainers.version>1.19.3</testcontainers.version>
+        <bucket4j.version>8.10.1</bucket4j.version>
+        <testcontainers.version>1.21.4</testcontainers.version>
     </properties>
 
     <dependencies>
@@ -111,7 +111,7 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk18on</artifactId>
-            <version>1.77</version>
+            <version>1.85</version>
         </dependency>
 
         <!-- Utilities -->
@@ -194,7 +194,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>3.3.1</version>
+                <version>3.6.0</version>
                 <configuration>
                     <configLocation>checkstyle.xml</configLocation>
                     <failsOnError>true</failsOnError>
@@ -212,7 +212,7 @@
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>4.8.3.1</version>
+                <version>4.10.3.0</version>
                 <configuration>
                     <effort>Max</effort>
                     <threshold>High</threshold>
