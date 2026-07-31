@@ -12,6 +12,7 @@
 - Remove placeholder `secret.yaml` from kustomization — Secrets `payment-db-credentials` (created by ExternalSecret `postgres-payment-app`) and `payment-encryption-secret` (created by ExternalSecret `payment-encryption-secret`) are provisioned at runtime by ESO from Vault; they are not checked into git
 - Update OAuth2 issuer URI from internal cluster domain to external Keycloak domain (`keycloak.3ai-talk.org`)
 - Bump `build-push-deploy.yml` reusable workflow SHA from `999f8d70` to `39c3072` — resolves `Unable to resolve action 'aquasecurity/trivy-action@0.30.0'` CI failure; image now pushable to GHCR
+- `.github/workflows/ci.yaml`: drop the redundant inline `docker-build` job. It raced the reusable `publish` job by also pushing `latest` (plus a bare short-sha and `main` tag), so `latest` pointed at the inline build while the immutable `sha-<gitsha>` tag came from `publish` — leaving `latest` matching no `sha-*` by digest and blocking the Hub `app-cve-scan` promoter. The reusable `publish` job is now the single source of `latest`, co-tagged with `sha-<gitsha>`
 
 ### Changed
 - `k8s/base/deployment.yaml`: add explicit `strategy: RollingUpdate` with `maxSurge: 0` / `maxUnavailable: 1` so rollouts complete on the single-node hostinger cluster instead of wedging with an unschedulable surge pod (previously relied on the Kubernetes default surge)
