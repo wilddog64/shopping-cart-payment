@@ -9,6 +9,7 @@
 - `.githooks/pre-push`: pre-push hook to block accidental direct pushes from feature branches to main; bypass with `ALLOW_MAIN_PUSH=1`
 
 ### Fixed
+- `Dockerfile`: revert Java builder and runtime base images to Eclipse Temurin 21 because JDK 25 breaks Spring Boot 3.2.0-managed Lombok 1.18.30 annotation processing
 - Remove placeholder `secret.yaml` from kustomization — Secrets `payment-db-credentials` (created by ExternalSecret `postgres-payment-app`) and `payment-encryption-secret` (created by ExternalSecret `payment-encryption-secret`) are provisioned at runtime by ESO from Vault; they are not checked into git
 - Update OAuth2 issuer URI from internal cluster domain to external Keycloak domain (`keycloak.3ai-talk.org`)
 - Bump `build-push-deploy.yml` reusable workflow SHA from `999f8d70` to `39c3072` — resolves `Unable to resolve action 'aquasecurity/trivy-action@0.30.0'` CI failure; image now pushable to GHCR

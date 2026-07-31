@@ -2,7 +2,7 @@
 # Multi-stage build for optimized image size
 
 # Stage 1: Build
-FROM eclipse-temurin:25-jdk-alpine AS builder
+FROM eclipse-temurin:21-jdk-alpine AS builder
 
 WORKDIR /app
 
@@ -26,7 +26,7 @@ RUN --mount=type=secret,id=GH_TOKEN mvn package -DskipTests -B
 RUN java -Djarmode=layertools -jar target/*.jar extract --destination extracted
 
 # Stage 2: Runtime
-FROM eclipse-temurin:25-jre-alpine AS runtime
+FROM eclipse-temurin:21-jre-alpine AS runtime
 
 # Security: Run as non-root user
 RUN addgroup -g 1001 -S appgroup && \
