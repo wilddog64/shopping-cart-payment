@@ -8,6 +8,7 @@ require (
 	github.com/jackc/pgx/v5 v5.9.2
 	github.com/prometheus/client_golang v1.20.5
 	github.com/shopspring/decimal v1.4.0
+	github.com/stripe/stripe-go/v79 v79.12.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/time v0.6.0
 )

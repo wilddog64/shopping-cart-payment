@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/stripe/stripe-go/v79"
+	stripeintent "github.com/stripe/stripe-go/v79/paymentintent"
 )
 
 const (
@@ -119,9 +121,12 @@ func (g *MockGateway) shouldFail() bool {
 
 type StripeGateway struct {
 	enabled bool
+	apiKey  string
 }
 
-func NewStripeGateway(enabled bool) *StripeGateway   { return &StripeGateway{enabled: enabled} }
+func NewStripeGateway(enabled bool, apiKey string) *StripeGateway {
+	return &StripeGateway{enabled: enabled, apiKey: apiKey}
+}
 func (g *StripeGateway) GetName() string             { return "stripe" }
 func (g *StripeGateway) IsEnabled() bool             { return g.enabled }
 func (g *StripeGateway) SupportsRecurring() bool     { return false }
@@ -131,7 +136,46 @@ func (g *StripeGateway) ProcessPayment(request PaymentRequest) PaymentResult {
 	if !g.IsEnabled() {
 		return PaymentResultFailure("gateway_disabled", "Stripe gateway is not enabled")
 	}
-	return PaymentResultFailure("not_implemented", "Stripe gateway is not implemented yet (deferred to PR2)")
+	if strings.TrimSpace(request.PaymentMethodToken) == "" {
+		return PaymentResultFailure("missing_payment_method", "PaymentMethod ID is required")
+	}
+	stripe.Key = g.apiKey
+
+	params := &stripe.PaymentIntentParams{
+		Amount:        stripe.Int64(request.Amount.Shift(2).IntPart()),
+		Currency:      stripe.String(strings.ToLower(request.Currency)),
+		PaymentMethod: stripe.String(request.PaymentMethodToken),
+		Confirm:       stripe.Bool(true),
+	}
+	params.AutomaticPaymentMethods = &stripe.PaymentIntentAutomaticPaymentMethodsParams{
+		Enabled:        stripe.Bool(true),
+		AllowRedirects: stripe.String("never"),
+	}
+	if strings.TrimSpace(request.Description) != "" {
+		params.Description = stripe.String(request.Description)
+	}
+	if strings.TrimSpace(request.IdempotencyKey) != "" {
+		params.SetIdempotencyKey(request.IdempotencyKey)
+	}
+	params.AddExpand("latest_charge")
+
+	pi, err := stripeintent.New(params)
+	if err != nil {
+		if serr, ok := err.(*stripe.Error); ok {
+			return PaymentResultFailure(string(serr.Code), serr.Msg)
+		}
+		return PaymentResultFailure("stripe_error", err.Error())
+	}
+	if pi.Status != stripe.PaymentIntentStatusSucceeded {
+		return PaymentResultFailure("payment_"+string(pi.Status), "Stripe payment not completed: "+string(pi.Status))
+	}
+
+	last4, brand := "", ""
+	if pi.LatestCharge != nil && pi.LatestCharge.PaymentMethodDetails != nil && pi.LatestCharge.PaymentMethodDetails.Card != nil {
+		last4 = pi.LatestCharge.PaymentMethodDetails.Card.Last4
+		brand = string(pi.LatestCharge.PaymentMethodDetails.Card.Brand)
+	}
+	return PaymentResult{Success: true, TransactionID: pi.ID, PaymentIntentID: pi.ID, Status: "completed", CardLast4: last4, CardBrand: brand}
 }
 
 func (g *StripeGateway) ProcessRefund(request RefundRequest) RefundResult {
@@ -145,7 +189,7 @@ func (g *StripeGateway) Tokenize(request TokenizeRequest) TokenizeResult {
 	if !g.IsEnabled() {
 		return TokenizeResultFailure("gateway_disabled", "Stripe gateway is not enabled")
 	}
-	return TokenizeResult{Success: true, Token: "stripe_pm_" + uuid.NewString()[:16], Last4: last4(request.CardNumber), Brand: "visa", ExpMonth: request.CardExpMonth, ExpYear: request.CardExpYear}
+	return TokenizeResultFailure("not_supported", "Use Stripe Elements to create a PaymentMethod client-side")
 }
 
 func (g *StripeGateway) DeleteToken(token string) bool { return g.IsEnabled() }

@@ -47,10 +47,10 @@ func TestMockGatewaySuccessAndFailurePaths(t *testing.T) {
 		}
 	})
 
-	t.Run("stripe and paypal stubs fail fast", func(t *testing.T) {
-		stripe := NewStripeGateway(true)
-		if result := stripe.ProcessPayment(PaymentRequest{}); result.Success || result.ErrorCode != "not_implemented" {
-			t.Fatalf("stripe payment result = %+v, want not_implemented failure", result)
+	t.Run("stripe guard and paypal stub fail fast", func(t *testing.T) {
+		stripe := NewStripeGateway(true, "sk_test_dummy")
+		if result := stripe.ProcessPayment(PaymentRequest{}); result.Success || result.ErrorCode != "missing_payment_method" {
+			t.Fatalf("stripe payment result = %+v, want missing_payment_method failure", result)
 		}
 		if result := stripe.ProcessRefund(RefundRequest{}); result.Success || result.ErrorCode != "not_implemented" {
 			t.Fatalf("stripe refund result = %+v, want not_implemented failure", result)
