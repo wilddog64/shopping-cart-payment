@@ -1,5 +1,9 @@
 # Active Context: Payment Service
 
+## Latest completed task
+
+- **Phase B Stripe test-mode gateway COMPLETE `5867e0c` on `origin/feat/stripe-checkout-gateway` (2026-08-01).** Stripe PaymentIntent confirmation now uses only a client-created PaymentMethod ID, with idempotency and test guard paths; Go formatting, vet, build, and tests passed.
+
 ## Current Status (2026-03-14)
 
 CI green. All PRs merged to main. Branch protection active.

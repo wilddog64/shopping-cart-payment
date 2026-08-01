@@ -1,5 +1,7 @@
 # Progress: Payment Service
 
+- [x] **Phase B Stripe test-mode gateway COMPLETE `5867e0c` on `origin/feat/stripe-checkout-gateway` (2026-08-01).** Added the Stripe Go SDK, PaymentIntent charge path, API-key constructor wiring, and disabled/missing-PaymentMethod tests; all Go gates passed.
+
 ## What's Built
 
 ### Core Entities
