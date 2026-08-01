@@ -163,6 +163,29 @@ jobs:
           name: dependency-check-report
           path: target/dependency-check-report.html
 
+  image-build-check:
+    name: Image Build Check
+    needs: [build]
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image (no push)
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          secrets: |
+            GH_TOKEN=${{ secrets.PACKAGES_TOKEN }}
+
   publish:
     name: Build, Scan & Push
     needs: [build]
