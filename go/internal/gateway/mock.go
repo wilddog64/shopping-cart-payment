@@ -227,13 +227,6 @@ func (g *PayPalGateway) Tokenize(request TokenizeRequest) TokenizeResult {
 
 func (g *PayPalGateway) DeleteToken(token string) bool { return g.IsEnabled() }
 
-func last4(cardNumber string) string {
-	if len(cardNumber) >= 4 {
-		return cardNumber[len(cardNumber)-4:]
-	}
-	return "4242"
-}
-
 func PaymentResultFailure(code, message string) PaymentResult {
 	return PaymentResult{Success: false, Status: "failed", ErrorCode: code, ErrorMessage: message}
 }
