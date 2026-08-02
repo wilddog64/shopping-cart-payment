@@ -2,6 +2,8 @@
 
 ## Latest completed task
 
+- **Stripe gateway Copilot hardening COMPLETE** — `43b4907` uses a per-request Stripe client and returns a generic non-Stripe failure message; pushed to `origin/feat/stripe-checkout-gateway`. Go formatting, build, vet, and gateway tests passed with a writable cache.
+
 - **Phase B Stripe test-mode gateway COMPLETE `5867e0c` on `origin/feat/stripe-checkout-gateway` (2026-08-01).** Stripe PaymentIntent confirmation now uses only a client-created PaymentMethod ID, with idempotency and test guard paths; Go formatting, vet, build, and tests passed.
 
 ## Current Status (2026-03-14)
