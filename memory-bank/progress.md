@@ -1,5 +1,9 @@
 # Progress: Payment Service
 
+- [x] **Stripe gateway Copilot hardening** — `43b4907` removed global `stripe.Key`, added the per-request client, and stopped leaking raw error detail; pushed to `feat/stripe-checkout-gateway`. Specified Go gates passed uncached.
+
+- [x] **Phase B Stripe test-mode gateway COMPLETE `5867e0c` on `origin/feat/stripe-checkout-gateway` (2026-08-01).** Added the Stripe Go SDK, PaymentIntent charge path, API-key constructor wiring, and disabled/missing-PaymentMethod tests; all Go gates passed.
+
 ## What's Built
 
 ### Core Entities

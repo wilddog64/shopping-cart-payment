@@ -44,7 +44,7 @@ func main() {
 	}
 
 	mockGateway := gateway.NewMockGateway(cfg.MockGatewayEnabled, cfg.MockGatewayDelayMS, cfg.MockGatewayFailureRate)
-	stripeGateway := gateway.NewStripeGateway(cfg.StripeEnabled && cfg.StripeAPIKey != "")
+	stripeGateway := gateway.NewStripeGateway(cfg.StripeEnabled && cfg.StripeAPIKey != "", cfg.StripeAPIKey)
 	paypalGateway := gateway.NewPayPalGateway(cfg.PayPalEnabled && cfg.PayPalClientID != "" && cfg.PayPalClientSecret != "")
 	router := gateway.NewRouter(cfg.PaymentGatewayDefault, mockGateway, stripeGateway, paypalGateway)
 
