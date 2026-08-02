@@ -8,7 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stripe/stripe-go/v79"
-	stripeintent "github.com/stripe/stripe-go/v79/paymentintent"
+	stripeclient "github.com/stripe/stripe-go/v79/client"
 )
 
 const (
@@ -139,8 +139,6 @@ func (g *StripeGateway) ProcessPayment(request PaymentRequest) PaymentResult {
 	if strings.TrimSpace(request.PaymentMethodToken) == "" {
 		return PaymentResultFailure("missing_payment_method", "PaymentMethod ID is required")
 	}
-	stripe.Key = g.apiKey
-
 	params := &stripe.PaymentIntentParams{
 		Amount:        stripe.Int64(request.Amount.Shift(2).IntPart()),
 		Currency:      stripe.String(strings.ToLower(request.Currency)),
@@ -159,12 +157,13 @@ func (g *StripeGateway) ProcessPayment(request PaymentRequest) PaymentResult {
 	}
 	params.AddExpand("latest_charge")
 
-	pi, err := stripeintent.New(params)
+	sc := stripeclient.New(g.apiKey, nil)
+	pi, err := sc.PaymentIntents.New(params)
 	if err != nil {
 		if serr, ok := err.(*stripe.Error); ok {
 			return PaymentResultFailure(string(serr.Code), serr.Msg)
 		}
-		return PaymentResultFailure("stripe_error", err.Error())
+		return PaymentResultFailure("stripe_error", "payment processing failed")
 	}
 	if pi.Status != stripe.PaymentIntentStatusSucceeded {
 		return PaymentResultFailure("payment_"+string(pi.Status), "Stripe payment not completed: "+string(pi.Status))
