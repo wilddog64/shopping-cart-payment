@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Added
+- Stripe test-mode payment gateway in the Go service (Stripe checkout Phase B): `NewStripeGateway` now accepts the API key and creates a real Stripe charge from a client-supplied PaymentMethod token (`pm_…`), replacing the `not_implemented` stub. The gateway stays inert (mock behaviour) until `STRIPE_API_KEY` is provisioned via ESO/Vault, so the change is safe before the key exists. Spec: `docs/plans/` Phase B payment Stripe test-mode gateway.
 - `.github/workflows/ci.yaml`: add a PR-only, no-push Docker image build check to catch base-image and JDK compatibility failures before merge
 - `.github/workflows/dependabot-automerge.yml`: auto-merge Dependabot minor/patch version updates and all security updates (any semver, via `alert-lookup`) with `gh pr merge --auto --squash` once required CI checks pass; **non-security** major bumps stay open for review (`dependabot/fetch-metadata` pinned to v2.3.0; `pull_request_target` scoped to `main`, job-level least-privilege permissions, gated on the PR author, no PR-head checkout)
 - `.github/dependabot.yml`: Dependabot scheduled version updates for Maven dependencies, Docker base images, and GitHub Actions (weekly; minor/patch grouped, majors separate). Repository-level Dependabot security updates (immediate advisory-triggered PRs) are enabled separately as a repo setting — together they close the first-mile CVE gap so a flagged app dependency opens an update PR that CI builds into a clean image
