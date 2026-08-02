@@ -21,6 +21,8 @@ CI green. All PRs merged to main. Branch protection active.
 
 ## Active Task
 
+- **Stripe live test-mode enablement** — `feat/stripe-live` commit `7ce3292` enables `stripe.enabled` in the payment ConfigMap; pushed to origin. No Stripe keys were changed.
+
 - **Multi-arch workflow pin** — branch `fix/multiarch-workflow-pin` updates `.github/workflows/ci.yaml` to use infra SHA `999f8d7` that publishes amd64+arm64 images.
 - **CI fixes — Maven wrapper + GitHub Packages auth** — Dockerfile now installs Maven via apk and mounts `GH_TOKEN` secret for dependency resolution (commits `ad9bc86`, `377cdf4`). Latest run (`23175303688`) still fails to authenticate to GitHub Packages; ensure `PACKAGES_TOKEN` has read access to `wilddog64/rabbitmq-client-java` packages.
 

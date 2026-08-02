@@ -1,5 +1,9 @@
 # Progress: Payment Service
 
+## Recent Task
+
+- [x] Stripe test-mode gateway enabled via `k8s/base/configmap.yaml` (`7ce3292`), pushed on `feat/stripe-live`; exactly one config line changed.
+
 ## What's Built
 
 ### Core Entities
