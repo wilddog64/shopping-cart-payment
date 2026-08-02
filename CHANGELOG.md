@@ -20,6 +20,7 @@
 
 ### Changed
 - `k8s/base/deployment.yaml`: add explicit `strategy: RollingUpdate` with `maxSurge: 0` / `maxUnavailable: 1` so rollouts complete on the single-node hostinger cluster instead of wedging with an unschedulable surge pod (previously relied on the Kubernetes default surge)
+- `k8s/base/configmap.yaml`: enable the Stripe payment gateway in test mode (`stripe.enabled: "false"` → `"true"`). The gateway still gates on a non-empty `STRIPE_API_KEY` (`StripeEnabled && StripeAPIKey != ""`), so it stays in mock mode until the key is provisioned via ESO/Vault — flipping the flag is safe before the key exists. `payment.gateway.default` remains `mock`.
 
 ## [0.1.1] - 2026-03-20
 
