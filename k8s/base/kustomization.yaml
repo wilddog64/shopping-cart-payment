@@ -18,6 +18,7 @@ resources:
 - deployment.yaml
 - service.yaml
 - networkpolicy.yaml
+- externalsecret-ghcr.yaml
 
 commonLabels:
   app.kubernetes.io/part-of: shopping-cart
