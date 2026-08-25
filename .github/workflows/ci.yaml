@@ -170,6 +170,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      packages: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -184,7 +185,8 @@ jobs:
           file: ./Dockerfile
           push: false
           secrets: |
-            GH_TOKEN=${{ secrets.PACKAGES_TOKEN }}
+            GH_TOKEN=${{ secrets.PACKAGES_TOKEN || github.token }}
+            GH_ACTOR=${{ github.actor }}
 
   publish:
     name: Build, Scan & Push
