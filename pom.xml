@@ -20,7 +20,7 @@
     <properties>
         <java.version>21</java.version>
         <rabbitmq-client.version>1.0.0-SNAPSHOT</rabbitmq-client.version>
-        <stripe.version>24.0.0</stripe.version>
+        <stripe.version>33.3.0</stripe.version>
         <paypal.version>2.0.0</paypal.version>
         <bucket4j.version>8.10.1</bucket4j.version>
         <testcontainers.version>1.21.4</testcontainers.version>
@@ -68,7 +68,7 @@
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-database-postgresql</artifactId>
-            <version>10.6.0</version>
+            <version>13.2.0</version>
         </dependency>
 
         <!-- RabbitMQ Client Library (with Vault integration) -->
