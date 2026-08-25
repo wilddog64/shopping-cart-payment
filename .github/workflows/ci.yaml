@@ -15,7 +15,7 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   MAVEN_OPTS: -Dmaven.multiModuleProjectDirectory=${{ github.workspace }}
-  PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN || secrets.GITHUB_TOKEN }}
+  PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN || github.token }}
 
 jobs:
   lint:
