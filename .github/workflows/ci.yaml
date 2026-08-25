@@ -200,3 +200,5 @@ jobs:
     secrets:
       PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
       PROMOTER_SSH_KEY: ${{ secrets.PROMOTER_SSH_KEY }}
+      COSIGN_KEY: ${{ secrets.COSIGN_KEY }}
+      COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
