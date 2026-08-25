@@ -15,13 +15,19 @@ RUN --mount=type=secret,id=GH_TOKEN \
     --mount=type=secret,id=GH_ACTOR \
     mkdir -p /root/.m2 && \
     printf '<settings>\n  <servers>\n    <server>\n      <id>github-rabbitmq-client</id>\n      <username>%s</username>\n      <password>%s</password>\n    </server>\n  </servers>\n</settings>\n' "$(cat /run/secrets/GH_ACTOR)" "$(cat /run/secrets/GH_TOKEN)" > /root/.m2/settings.xml && \
-    mvn dependency:go-offline -B -Dmaven.wagon.http.retryHandler.count=5 -Dmaven.wagon.http.retryHandler.requestSentEnabled=true
+    mvn dependency:go-offline -B -Dmaven.wagon.http.retryHandler.count=5 -Dmaven.wagon.http.retryHandler.requestSentEnabled=true -s /root/.m2/settings.xml && \
+    rm -f /root/.m2/settings.xml
 
 # Copy source code
 COPY src/ src/
 
 # Build the application
-RUN --mount=type=secret,id=GH_TOKEN mvn package -DskipTests -B -s /root/.m2/settings.xml
+RUN --mount=type=secret,id=GH_TOKEN \
+    --mount=type=secret,id=GH_ACTOR \
+    mkdir -p /root/.m2 && \
+    printf '<settings>\n  <servers>\n    <server>\n      <id>github-rabbitmq-client</id>\n      <username>%s</username>\n      <password>%s</password>\n    </server>\n  </servers>\n</settings>\n' "$(cat /run/secrets/GH_ACTOR)" "$(cat /run/secrets/GH_TOKEN)" > /root/.m2/settings.xml && \
+    mvn package -DskipTests -B -s /root/.m2/settings.xml && \
+    rm -f /root/.m2/settings.xml
 
 # Extract layers for optimized Docker layering
 RUN java -Djarmode=layertools -jar target/*.jar extract --destination extracted
