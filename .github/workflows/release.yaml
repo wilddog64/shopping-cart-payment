@@ -69,6 +69,9 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           platforms: linux/amd64,linux/arm64
+          secrets: |
+            GH_TOKEN=${{ secrets.PACKAGES_TOKEN || github.token }}
+            GH_ACTOR=${{ github.actor }}
 
       - name: Generate changelog
         id: changelog
