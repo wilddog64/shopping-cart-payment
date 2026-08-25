@@ -15,6 +15,7 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   MAVEN_OPTS: -Dmaven.multiModuleProjectDirectory=${{ github.workspace }}
+  PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN || secrets.GITHUB_TOKEN }}
 
 jobs:
   lint:
@@ -36,13 +37,9 @@ jobs:
 
       - name: Run Checkstyle
         run: ./mvnw -B checkstyle:check -s .github/maven-settings.xml
-        env:
-          PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
 
       - name: Run SpotBugs
         run: ./mvnw -B spotbugs:check -DskipTests -s .github/maven-settings.xml
-        env:
-          PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
 
   build:
     name: Build and Test
@@ -65,8 +62,6 @@ jobs:
 
       - name: Build with Maven
         run: ./mvnw clean package -DskipTests -B -s .github/maven-settings.xml
-        env:
-          PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
 
       - name: Run Unit Tests
         run: ./mvnw test -B
