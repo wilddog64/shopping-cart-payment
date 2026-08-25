@@ -68,7 +68,7 @@
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-database-postgresql</artifactId>
-            <version>13.2.0</version>
+            <version>13.3.0</version>
         </dependency>
 
         <!-- RabbitMQ Client Library (with Vault integration) -->
@@ -111,7 +111,7 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk18on</artifactId>
-            <version>1.85</version>
+            <version>1.85.2</version>
         </dependency>
 
         <!-- Utilities -->
@@ -212,7 +212,7 @@
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>4.10.3.0</version>
+                <version>4.10.4.0</version>
                 <configuration>
                     <effort>Max</effort>
                     <threshold>High</threshold>
