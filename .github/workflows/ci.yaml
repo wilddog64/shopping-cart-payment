@@ -26,7 +26,7 @@ jobs:
       packages: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -51,7 +51,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -102,7 +102,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -128,7 +128,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -165,12 +165,13 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      packages: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Build image (no push)
         uses: docker/build-push-action@v7
@@ -180,12 +181,13 @@ jobs:
           push: false
           secrets: |
             GH_TOKEN=${{ secrets.PACKAGES_TOKEN || github.token }}
+            GH_ACTOR=${{ github.actor }}
 
   publish:
     name: Build, Scan & Push
     needs: [build]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    uses: wilddog64/shopping-cart-infra/.github/workflows/build-push-deploy.yml@39c3072759bf7da92ec8cd08653e67d7f62d4032
+    uses: wilddog64/shopping-cart-infra/.github/workflows/build-push-deploy.yml@47769da1a4f36f9430e204829b9c78418eb25641
     with:
       service-name: shopping-cart-payment
       image-name: ghcr.io/wilddog64/shopping-cart-payment
@@ -194,3 +196,4 @@ jobs:
       packages: write
     secrets:
       PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
+      PROMOTER_SSH_KEY: ${{ secrets.PROMOTER_SSH_KEY }}
