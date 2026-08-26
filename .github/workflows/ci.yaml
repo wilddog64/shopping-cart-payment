@@ -90,6 +90,9 @@ jobs:
     name: Integration Tests
     runs-on: ubuntu-latest
     needs: build
+    permissions:
+      contents: read
+      packages: read
 
     services:
       postgres:
@@ -125,7 +128,8 @@ jobs:
           DB_USERNAME: postgres
           DB_PASSWORD: testpassword
           PAYMENT_GATEWAY_DEFAULT: mock
-        run: ./mvnw verify -P integration-tests -B
+          PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./mvnw verify -P integration-tests -B -s .github/maven-settings.xml
 
   security-scan:
     name: Security Scan
