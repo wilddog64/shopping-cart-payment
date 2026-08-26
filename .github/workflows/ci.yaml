@@ -37,9 +37,13 @@ jobs:
 
       - name: Run Checkstyle
         run: ./mvnw -B checkstyle:check -s .github/maven-settings.xml
+        env:
+          PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run SpotBugs
         run: ./mvnw -B spotbugs:check -DskipTests -s .github/maven-settings.xml
+        env:
+          PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build:
     name: Build and Test
@@ -62,6 +66,8 @@ jobs:
 
       - name: Build with Maven
         run: ./mvnw clean package -DskipTests -B -s .github/maven-settings.xml
+        env:
+          PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run Unit Tests
         run: ./mvnw test -B
@@ -180,8 +186,7 @@ jobs:
           file: ./Dockerfile
           push: false
           secrets: |
-            GH_TOKEN=${{ secrets.PACKAGES_TOKEN || github.token }}
-            GH_ACTOR=${{ github.actor }}
+            GH_TOKEN=${{ secrets.GITHUB_TOKEN }}
 
   publish:
     name: Build, Scan & Push

@@ -11,6 +11,7 @@
 - `.githooks/pre-push`: pre-push hook to block accidental direct pushes from feature branches to main; bypass with `ALLOW_MAIN_PUSH=1`
 
 ### Fixed
+- `.github/workflows/ci.yaml`: authenticate the Maven GitHub Packages pull of `com.shoppingcart:rabbitmq-client` with the built-in `GITHUB_TOKEN` instead of the manually-rotated `PACKAGES_TOKEN` PAT in the `lint`, `build`, and `image-build-check` jobs. `rabbitmq-client` is a public package and every job already declares `packages: read`, so `GITHUB_TOKEN` (auto-minted per run, never expires) suffices — this removes the recurring ~90-day PAT rotation as a PR-blocking chore. The runner jobs masked the expired PAT via `cache: maven`; the cache-less Docker build in `image-build-check` exposed it as a 401, blocking all PRs. The `publish` job still uses `PACKAGES_TOKEN` (its reusable workflow may need a cross-repo PAT) — a separate follow-up
 - `Dockerfile`: revert Java builder and runtime base images to Eclipse Temurin 21 because JDK 25 breaks Spring Boot 3.2.0-managed Lombok 1.18.30 annotation processing
 - Remove placeholder `secret.yaml` from kustomization — Secrets `payment-db-credentials` (created by ExternalSecret `postgres-payment-app`) and `payment-encryption-secret` (created by ExternalSecret `payment-encryption-secret`) are provisioned at runtime by ESO from Vault; they are not checked into git
 - Update OAuth2 issuer URI from internal cluster domain to external Keycloak domain (`keycloak.3ai-talk.org`)
