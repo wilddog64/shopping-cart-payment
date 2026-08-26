@@ -26,4 +26,4 @@ commonLabels:
 images:
   - name: ghcr.io/your-org/payment-service
     newName: ghcr.io/wilddog64/shopping-cart-payment
-    newTag: sha-7eef83252169f27dd43074c03c7be7b214b8f323
+    newTag: sha-d8b8a36973ee87ec5ce47649672b2435dcce781a
