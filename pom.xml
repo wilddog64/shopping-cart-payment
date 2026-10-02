@@ -24,6 +24,13 @@
         <paypal.version>2.0.0</paypal.version>
         <bucket4j.version>8.10.1</bucket4j.version>
         <testcontainers.version>1.21.4</testcontainers.version>
+        <!-- CVE overrides: Spring Boot 3.5.16 BOM still ships these vulnerable versions (Trivy, 2026-10-02).
+             Drop each one once the parent BOM reaches it. -->
+        <tomcat.version>10.1.60</tomcat.version>
+        <jackson-bom.version>2.21.7</jackson-bom.version>
+        <rabbit-amqp-client.version>5.34.0</rabbit-amqp-client.version>
+        <httpcore5.version>5.4.4</httpcore5.version>
+        <postgresql.version>42.7.13</postgresql.version>
     </properties>
 
     <dependencies>
