@@ -83,6 +83,9 @@ rabbitmq:
 
 # Payment Gateway Configuration
 payment:
+  security:
+    resource-client-id: ${PAYMENT_RESOURCE_CLIENT_ID:payment-service}
+
   gateway:
     default: ${PAYMENT_GATEWAY_DEFAULT:mock}
 

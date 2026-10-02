@@ -272,7 +272,7 @@ class PaymentControllerTest {
             mockMvc.perform(get(API_BASE + "/{paymentId}", paymentId)
                             .with(jwt().jwt(jwt -> jwt.claim("realm_access",
                                     Map.of("roles", List.of("PAYMENT_USER"))))
-                                    .authorities(new KeycloakGrantedAuthoritiesConverter())))
+                                    .authorities(new KeycloakGrantedAuthoritiesConverter("payment-service"))))
                     .andExpect(status().isNotFound());
         }
 
@@ -284,7 +284,7 @@ class PaymentControllerTest {
             mockMvc.perform(get(API_BASE + "/{paymentId}", paymentId)
                             .with(jwt().jwt(jwt -> jwt.claim("realm_access",
                                     Map.of("roles", List.of("GUEST"))))
-                                    .authorities(new KeycloakGrantedAuthoritiesConverter())))
+                                    .authorities(new KeycloakGrantedAuthoritiesConverter("payment-service"))))
                     .andExpect(status().isForbidden());
         }
 

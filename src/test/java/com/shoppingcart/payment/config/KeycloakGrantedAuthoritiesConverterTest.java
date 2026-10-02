@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class KeycloakGrantedAuthoritiesConverterTest {
 
-    private final KeycloakGrantedAuthoritiesConverter converter = new KeycloakGrantedAuthoritiesConverter();
+    private final KeycloakGrantedAuthoritiesConverter converter = new KeycloakGrantedAuthoritiesConverter("payment-service");
 
     @Test
     void convertsRealmRoles() {
@@ -29,6 +29,29 @@ class KeycloakGrantedAuthoritiesConverterTest {
                 "payment-service", Map.of("roles", List.of("PAYMENT_READ")))));
 
         assertEquals(Set.of("ROLE_PAYMENT_READ"), authorityNames(jwt));
+    }
+
+    @Test
+    void ignoresRolesFromOtherClients() {
+        Jwt jwt = jwt(Map.of("resource_access", Map.of(
+                "other-client", Map.of("roles", List.of("PAYMENT_ADMIN")),
+                "payment-service", Map.of("roles", List.of("PAYMENT_READ")))));
+
+        assertEquals(Set.of("ROLE_PAYMENT_READ"), authorityNames(jwt));
+    }
+
+    @Test
+    void blankResourceClientIdGrantsOnlyRealmRoles() {
+        KeycloakGrantedAuthoritiesConverter blankClientConverter =
+                new KeycloakGrantedAuthoritiesConverter("");
+        Jwt jwt = jwt(Map.of(
+                "realm_access", Map.of("roles", List.of("PAYMENT_USER")),
+                "resource_access", Map.of("payment-service", Map.of("roles", List.of("PAYMENT_READ")))));
+
+        Set<String> authorities = blankClientConverter.convert(jwt).stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toSet());
+        assertEquals(Set.of("ROLE_PAYMENT_USER"), authorities);
     }
 
     @Test

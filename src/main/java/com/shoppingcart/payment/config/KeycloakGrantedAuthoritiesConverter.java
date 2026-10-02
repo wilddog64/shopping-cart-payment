@@ -15,6 +15,12 @@ import java.util.Set;
 
 public class KeycloakGrantedAuthoritiesConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
 
+    private final String resourceClientId;
+
+    public KeycloakGrantedAuthoritiesConverter(String resourceClientId) {
+        this.resourceClientId = resourceClientId;
+    }
+
     @Override
     public Collection<GrantedAuthority> convert(Jwt jwt) {
         Set<String> roles = new LinkedHashSet<>();
@@ -29,12 +35,13 @@ public class KeycloakGrantedAuthoritiesConverter implements Converter<Jwt, Colle
     }
 
     private void addResourceRoles(Object resourceAccess, Set<String> roles) {
+        if (resourceClientId == null || resourceClientId.isBlank()) {
+            return;
+        }
         if (!(resourceAccess instanceof Map<?, ?> resources)) {
             return;
         }
-        for (Object client : resources.values()) {
-            addRoles(client, roles);
-        }
+        addRoles(resources.get(resourceClientId), roles);
     }
 
     private void addRoles(Object access, Set<String> roles) {
