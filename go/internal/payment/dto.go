@@ -36,18 +36,19 @@ type RefundRequest struct {
 }
 
 type PaymentResponse struct {
-	ID            uuid.UUID     `json:"id"`
-	OrderID       string        `json:"orderId"`
-	CustomerID    string        `json:"customerId"`
-	Amount        Amount        `json:"amount"`
-	Currency      string        `json:"currency"`
-	Status        PaymentStatus `json:"status"`
-	Gateway       string        `json:"gateway"`
-	CardLast4     *string       `json:"cardLast4"`
-	CardBrand     *string       `json:"cardBrand"`
-	FailureReason *string       `json:"failureReason"`
-	CreatedAt     *string       `json:"createdAt"`
-	CompletedAt   *string       `json:"completedAt"`
+	ID                   uuid.UUID     `json:"id"`
+	OrderID              string        `json:"orderId"`
+	CustomerID           string        `json:"customerId"`
+	Amount               Amount        `json:"amount"`
+	Currency             string        `json:"currency"`
+	Status               PaymentStatus `json:"status"`
+	Gateway              string        `json:"gateway"`
+	GatewayTransactionID *string       `json:"gatewayTransactionId"`
+	CardLast4            *string       `json:"cardLast4"`
+	CardBrand            *string       `json:"cardBrand"`
+	FailureReason        *string       `json:"failureReason"`
+	CreatedAt            *string       `json:"createdAt"`
+	CompletedAt          *string       `json:"completedAt"`
 }
 
 type RefundResponse struct {
@@ -70,24 +71,30 @@ func PaymentResponseFrom(p *Payment) PaymentResponse {
 		v := p.CardBrand.String
 		cardBrand = &v
 	}
+	var gatewayTransactionID *string
+	if p.GatewayTransactionID.Valid {
+		v := p.GatewayTransactionID.String
+		gatewayTransactionID = &v
+	}
 	var failureReason *string
 	if p.FailureReason.Valid {
 		v := p.FailureReason.String
 		failureReason = &v
 	}
 	return PaymentResponse{
-		ID:            p.ID,
-		OrderID:       p.OrderID,
-		CustomerID:    p.CustomerID,
-		Amount:        Amount(p.Amount),
-		Currency:      p.Currency,
-		Status:        p.Status,
-		Gateway:       p.Gateway,
-		CardLast4:     cardLast4,
-		CardBrand:     cardBrand,
-		FailureReason: failureReason,
-		CreatedAt:     stringPtr(p.CreatedAt),
-		CompletedAt:   timePtrOrNil(p.CompletedAt),
+		ID:                   p.ID,
+		OrderID:              p.OrderID,
+		CustomerID:           p.CustomerID,
+		Amount:               Amount(p.Amount),
+		Currency:             p.Currency,
+		Status:               p.Status,
+		Gateway:              p.Gateway,
+		GatewayTransactionID: gatewayTransactionID,
+		CardLast4:            cardLast4,
+		CardBrand:            cardBrand,
+		FailureReason:        failureReason,
+		CreatedAt:            stringPtr(p.CreatedAt),
+		CompletedAt:          timePtrOrNil(p.CompletedAt),
 	}
 }
 
