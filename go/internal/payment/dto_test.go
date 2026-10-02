@@ -2,12 +2,24 @@ package payment
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/json"
 	"testing"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
+
+func TestPaymentResponseFromIncludesGatewayTransactionID(t *testing.T) {
+	p := &Payment{GatewayTransactionID: sql.NullString{String: "mock_txn_abc", Valid: true}}
+	got, err := json.Marshal(PaymentResponseFrom(p))
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	if !bytes.Contains(got, []byte(`"gatewayTransactionId":"mock_txn_abc"`)) {
+		t.Fatalf("gatewayTransactionId missing: %s", string(got))
+	}
+}
 
 func TestPaymentResponseAmountMarshalsAsJSONNumber(t *testing.T) {
 	resp := PaymentResponse{
