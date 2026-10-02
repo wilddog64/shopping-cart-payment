@@ -3,6 +3,8 @@ package com.shoppingcart.payment.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shoppingcart.payment.dto.ProcessPaymentRequest;
 import com.shoppingcart.payment.dto.RefundRequest;
+import com.shoppingcart.payment.config.KeycloakGrantedAuthoritiesConverter;
+import com.shoppingcart.payment.config.SecurityConfig;
 import com.shoppingcart.payment.entity.Payment;
 import com.shoppingcart.payment.entity.PaymentStatus;
 import com.shoppingcart.payment.entity.Refund;
@@ -22,6 +24,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,10 +33,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(PaymentController.class)
+@org.springframework.context.annotation.Import(SecurityConfig.class)
 @DisplayName("PaymentController Tests")
 class PaymentControllerTest {
 
@@ -256,6 +261,31 @@ class PaymentControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.id").value(paymentId.toString()))
                     .andExpect(jsonPath("$.orderId").value("order-123"));
+        }
+
+        @Test
+        @DisplayName("should authorize a payment user role from Keycloak realm_access")
+        void shouldAuthorizeKeycloakPaymentUserRole() throws Exception {
+            UUID paymentId = UUID.randomUUID();
+            when(paymentService.getPayment(paymentId)).thenReturn(Optional.empty());
+
+            mockMvc.perform(get(API_BASE + "/{paymentId}", paymentId)
+                            .with(jwt().jwt(jwt -> jwt.claim("realm_access",
+                                    Map.of("roles", List.of("PAYMENT_USER"))))
+                                    .authorities(new KeycloakGrantedAuthoritiesConverter("payment-service"))))
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        @DisplayName("should reject a Keycloak token without a payment role")
+        void shouldRejectKeycloakGuestRole() throws Exception {
+            UUID paymentId = UUID.randomUUID();
+
+            mockMvc.perform(get(API_BASE + "/{paymentId}", paymentId)
+                            .with(jwt().jwt(jwt -> jwt.claim("realm_access",
+                                    Map.of("roles", List.of("GUEST"))))
+                                    .authorities(new KeycloakGrantedAuthoritiesConverter("payment-service"))))
+                    .andExpect(status().isForbidden());
         }
 
         @Test
