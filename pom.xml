@@ -31,6 +31,7 @@
         <rabbit-amqp-client.version>5.34.0</rabbit-amqp-client.version>
         <httpcore5.version>5.4.4</httpcore5.version>
         <postgresql.version>42.7.13</postgresql.version>
+        <netty.version>4.1.138.Final</netty.version>
     </properties>
 
     <dependencies>
