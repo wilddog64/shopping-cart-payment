@@ -19,6 +19,7 @@ public class PaymentResponse {
     private String currency;
     private PaymentStatus status;
     private String gateway;
+    private String gatewayTransactionId;
     private String cardLast4;
     private String cardBrand;
     private String failureReason;
@@ -34,6 +35,7 @@ public class PaymentResponse {
                 .currency(payment.getCurrency())
                 .status(payment.getStatus())
                 .gateway(payment.getGateway())
+                .gatewayTransactionId(payment.getGatewayTransactionId())
                 .cardLast4(payment.getCardLast4())
                 .cardBrand(payment.getCardBrand())
                 .failureReason(payment.getFailureReason())
