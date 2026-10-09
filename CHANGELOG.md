@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Changed
+- Upgrade the payment service to Spring Boot 4.0.8 and Spring Framework 7, including the Jackson 3 HTTP layer and Testcontainers 2.x.
+
 ### Added
 - Stripe test-mode payment gateway in the Go service (Stripe checkout Phase B): `NewStripeGateway` now accepts the API key and creates a real Stripe charge from a client-supplied PaymentMethod token (`pm_…`), replacing the `not_implemented` stub. The gateway stays inert (mock behaviour) until `STRIPE_API_KEY` is provisioned via ESO/Vault, so the change is safe before the key exists. Spec: `docs/plans/` Phase B payment Stripe test-mode gateway.
 - `.github/workflows/ci.yaml`: add a PR-only, no-push Docker image build check to catch base-image and JDK compatibility failures before merge

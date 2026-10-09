@@ -8,6 +8,7 @@ import com.shoppingcart.payment.service.PaymentService;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+import org.flywaydb.core.Flyway;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -27,6 +28,15 @@ class PaymentServiceIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     private TransactionRepository transactionRepository;
+
+    @Autowired
+    private Flyway flyway;
+
+    @Test
+    @DisplayName("should run Flyway migrations")
+    void shouldRunFlywayMigrations() {
+        assertThat(flyway.info().applied()).isNotEmpty();
+    }
 
     private static final String ORDER_ID_PREFIX = "order-it-";
     private static final String CUSTOMER_ID = "customer-integration-test";

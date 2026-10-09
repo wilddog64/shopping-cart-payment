@@ -1,7 +1,7 @@
 # Payment Service — Architecture
 
 ## Overview
-The payment service is a Spring Boot 3 application that runs in its own `shopping-cart-payment` namespace for PCI DSS isolation. It exposes REST APIs for payment/capture/refund flows, talks to PostgreSQL for persistence, and integrates with Stripe/PayPal gateways via pluggable adapters. Secrets are sourced from Vault/ESO and mounted as Kubernetes secrets specific to this namespace.
+The payment service is a Spring Boot 4 application that runs in its own `shopping-cart-payment` namespace for PCI DSS isolation. It exposes REST APIs for payment/capture/refund flows, talks to PostgreSQL for persistence, and integrates with Stripe/PayPal gateways via pluggable adapters. Secrets are sourced from Vault/ESO and mounted as Kubernetes secrets specific to this namespace.
 
 ## Component Diagram
 
