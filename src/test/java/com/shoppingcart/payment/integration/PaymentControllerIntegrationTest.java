@@ -1,6 +1,6 @@
 package com.shoppingcart.payment.integration;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import com.shoppingcart.payment.dto.ProcessPaymentRequest;
 import com.shoppingcart.payment.dto.RefundRequest;
 import com.shoppingcart.payment.entity.Payment;
@@ -10,7 +10,7 @@ import com.shoppingcart.payment.repository.RefundRepository;
 import com.shoppingcart.payment.repository.TransactionRepository;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -32,7 +32,7 @@ class PaymentControllerIntegrationTest extends BaseIntegrationTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private ObjectMapper objectMapper;
+    private JsonMapper objectMapper;
 
     @Autowired
     private PaymentRepository paymentRepository;

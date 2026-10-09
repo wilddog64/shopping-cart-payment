@@ -1,6 +1,6 @@
 package com.shoppingcart.payment.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import com.shoppingcart.payment.dto.ProcessPaymentRequest;
 import com.shoppingcart.payment.dto.RefundRequest;
 import com.shoppingcart.payment.config.KeycloakGrantedAuthoritiesConverter;
@@ -15,8 +15,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -46,12 +46,12 @@ class PaymentControllerTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private ObjectMapper objectMapper;
+    private JsonMapper objectMapper;
 
-    @MockBean
+    @MockitoBean
     private PaymentService paymentService;
 
-    @MockBean
+    @MockitoBean
     private RefundService refundService;
 
     private static final String API_BASE = "/api/v1/payments";

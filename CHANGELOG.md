@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+### Changed
+- Upgrade the payment service to Spring Boot 4.0.8 and Spring Framework 7.0.9, which clears
+  **CVE-2026-47884** (spring-webmvc `XsltView` RCE, CRITICAL). It has no open-source fix on Spring
+  Framework 6.2.x. Also moves to the Jackson 3 HTTP layer, Testcontainers 2.x and
+  `rabbitmq-client` 1.1.0 (its Spring Boot 4 line).
+- Boot 4 starter renames: `spring-boot-starter-webmvc`, `spring-boot-starter-security-oauth2-resource-server`,
+  and `spring-boot-starter-flyway`. In Boot 4 a bare `flyway-core` no longer auto-configures, so
+  migrations would silently stop running. A new integration test asserts they ran.
+- CVE overrides: Tomcat, PostgreSQL and Netty are dropped, because the Boot 4 BOM already ships
+  fixed versions (and the old 10.1.x/4.1.x pins would have downgraded them). `amqp-client` 5.34.0,
+  `httpcore5` 5.4.4 and Jackson 2 2.21.7 are kept, under Boot 4 property names
+  (`jackson-2-bom.version`), because the BOM still ships lower versions.
+
 ### Added
 - Stripe test-mode payment gateway in the Go service (Stripe checkout Phase B): `NewStripeGateway` now accepts the API key and creates a real Stripe charge from a client-supplied PaymentMethod token (`pm_…`), replacing the `not_implemented` stub. The gateway stays inert (mock behaviour) until `STRIPE_API_KEY` is provisioned via ESO/Vault, so the change is safe before the key exists. Spec: `docs/plans/` Phase B payment Stripe test-mode gateway.
 - `.github/workflows/ci.yaml`: add a PR-only, no-push Docker image build check to catch base-image and JDK compatibility failures before merge
