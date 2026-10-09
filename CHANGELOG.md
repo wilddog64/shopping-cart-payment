@@ -14,6 +14,10 @@
   fixed versions (and the old 10.1.x/4.1.x pins would have downgraded them). `amqp-client` 5.34.0,
   `httpcore5` 5.4.4 and Jackson 2 2.21.7 are kept, under Boot 4 property names
   (`jackson-2-bom.version`), because the BOM still ships lower versions.
+- CVE overrides re-added after the first Boot 4 image (`sha-ea63cddc`) was scanned. Tomcat 11.0.26
+  (`tomcat.version`) clears 3 CRITICAL in 11.0.24: CVE-2026-65182, CVE-2026-65905 and CVE-2026-68525.
+  Jackson 3 3.1.7 (`jackson-bom.version`) clears 5 HIGH in `tools.jackson.core` 3.1.5. Both stay on
+  the patch line the Boot 4.0.8 BOM manages; drop each once the BOM reaches it.
 
 ### Added
 - Stripe test-mode payment gateway in the Go service (Stripe checkout Phase B): `NewStripeGateway` now accepts the API key and creates a real Stripe charge from a client-supplied PaymentMethod token (`pm_…`), replacing the `not_implemented` stub. The gateway stays inert (mock behaviour) until `STRIPE_API_KEY` is provisioned via ESO/Vault, so the change is safe before the key exists. Spec: `docs/plans/` Phase B payment Stripe test-mode gateway.
