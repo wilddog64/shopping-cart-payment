@@ -29,6 +29,10 @@
         <rabbit-amqp-client.version>5.34.0</rabbit-amqp-client.version>
         <httpcore5.version>5.4.4</httpcore5.version>
         <jackson-2-bom.version>2.21.7</jackson-2-bom.version>
+        <!-- 2026-10-09: the first Boot 4 image (sha-ea63cddc) scanned 3 CRITICAL in Tomcat 11.0.24
+             (CVE-2026-65182, -65905, -68525) and 5 HIGH in Jackson 3 3.1.5. -->
+        <tomcat.version>11.0.26</tomcat.version>
+        <jackson-bom.version>3.1.7</jackson-bom.version>
     </properties>
 
     <dependencies>
