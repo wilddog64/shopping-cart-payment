@@ -24,6 +24,11 @@
         <paypal.version>2.0.0</paypal.version>
         <bucket4j.version>8.10.1</bucket4j.version>
         <testcontainers.version>2.0.5</testcontainers.version>
+        <!-- CVE overrides: the Spring Boot 4.0.8 BOM manages these below the versions that cleared
+             CRITICAL/HIGH CVEs on 2026-10-02 (PR #81). Drop each one once the BOM reaches it. -->
+        <rabbit-amqp-client.version>5.34.0</rabbit-amqp-client.version>
+        <httpcore5.version>5.4.4</httpcore5.version>
+        <jackson-2-bom.version>2.21.7</jackson-2-bom.version>
     </properties>
 
     <dependencies>
