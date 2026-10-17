@@ -67,17 +67,7 @@ public class StripeGateway implements PaymentGateway {
             // Convert amount to cents (Stripe uses smallest currency unit)
             long amountInCents = request.getAmount().multiply(BigDecimal.valueOf(100)).longValue();
 
-            PaymentIntentCreateParams.Builder paramsBuilder = PaymentIntentCreateParams.builder()
-                    .setAmount(amountInCents)
-                    .setCurrency(request.getCurrency().toLowerCase())
-                    .setDescription("Order: " + request.getOrderId())
-                    .putMetadata("order_id", request.getOrderId())
-                    .putMetadata("customer_id", request.getCustomerId());
-
-            if (request.getPaymentMethodToken() != null) {
-                paramsBuilder.setPaymentMethod(request.getPaymentMethodToken());
-                paramsBuilder.setConfirm(true);
-            }
+            PaymentIntentCreateParams.Builder paramsBuilder = buildPaymentIntentParams(request, amountInCents);
 
             if (request.getIdempotencyKey() != null) {
                 // Stripe handles idempotency via request options
@@ -117,6 +107,26 @@ public class StripeGateway implements PaymentGateway {
             log.error("StripeGateway: Payment failed", e);
             return PaymentResult.failure(e.getCode(), e.getMessage());
         }
+    }
+
+    PaymentIntentCreateParams.Builder buildPaymentIntentParams(PaymentRequest request, long amountInCents) {
+        PaymentIntentCreateParams.Builder paramsBuilder = PaymentIntentCreateParams.builder()
+                .setAmount(amountInCents)
+                .setCurrency(request.getCurrency().toLowerCase())
+                .setDescription("Order: " + request.getOrderId())
+                .putMetadata("order_id", request.getOrderId())
+                .putMetadata("customer_id", request.getCustomerId());
+
+        if (request.getPaymentMethodToken() != null) {
+            paramsBuilder.setPaymentMethod(request.getPaymentMethodToken());
+            paramsBuilder.setConfirm(true);
+            paramsBuilder.setAutomaticPaymentMethods(
+                    PaymentIntentCreateParams.AutomaticPaymentMethods.builder()
+                            .setEnabled(true)
+                            .setAllowRedirects(PaymentIntentCreateParams.AutomaticPaymentMethods.AllowRedirects.NEVER)
+                            .build());
+        }
+        return paramsBuilder;
     }
 
     @Override
