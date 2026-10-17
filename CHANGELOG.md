@@ -3,6 +3,10 @@
 ## [Unreleased]
 
 ### Fixed
+- **Dependabot auto-merges now build an image.** Auto-merge was enabled with `GITHUB_TOKEN`, so the merge
+  was made as `github-actions`, and GitHub starts no workflow for that push: dependency and base-image fixes
+  reached `main` but no image. Auto-merge is now enabled with a GitHub App installation token
+  (`AUTOMERGE_APP_CLIENT_ID` / `AUTOMERGE_APP_PRIVATE_KEY`), whose merge push runs the normal build.
 - Stripe card payments returned HTTP 402 in test mode. The PaymentIntent was created and
   confirmed in one server-side call with a `payment_method` but no `return_url`. Stripe's dashboard
   default enables redirect-based payment methods, so it refused the confirm. When a payment-method
