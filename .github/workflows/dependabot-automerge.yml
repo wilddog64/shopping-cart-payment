@@ -23,6 +23,21 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           alert-lookup: true
 
+      - name: Mint the auto-merge App token
+        # auto-merge enabled with GITHUB_TOKEN merges as github-actions, and that push never starts the image build
+        id: app-token
+        if: >-
+          steps.meta.outputs.update-type == 'version-update:semver-minor' ||
+          steps.meta.outputs.update-type == 'version-update:semver-patch' ||
+          steps.meta.outputs.alert-state == 'OPEN'
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.AUTOMERGE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.AUTOMERGE_APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+          permission-workflows: write
+
       - name: Enable auto-merge for minor/patch and security updates
         # semver-minor OR semver-patch, OR any Dependabot security update (open alert) regardless of semver;
         # non-security major bumps fall through → left open for review
@@ -33,4 +48,4 @@ jobs:
         run: gh pr merge --auto --squash "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
