@@ -30,7 +30,7 @@ RUN --mount=type=secret,id=GH_TOKEN \
     rm -f /root/.m2/settings.xml
 
 # Extract layers for optimized Docker layering
-RUN java -Djarmode=layertools -jar target/*.jar extract --destination extracted
+RUN java -Djarmode=tools -jar target/*.jar extract --layers --launcher --destination extracted
 
 # Stage 2: Runtime
 FROM eclipse-temurin:21-jre-alpine AS runtime

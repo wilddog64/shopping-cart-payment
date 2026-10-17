@@ -3,6 +3,11 @@
 ## [Unreleased]
 
 ### Fixed
+- **Image build works on Spring Boot 4.1.** The Dockerfile extracted layers with `-Djarmode=layertools`,
+  which Spring Boot 4.1 removed (`Unsupported jarmode 'layertools'`), so the Dependabot bump to 4.1.1 failed
+  the Image Build Check. It now uses `-Djarmode=tools extract --layers --launcher`, available since 3.3,
+  which writes the same four layer directories, so the runtime `COPY` lines and `JarLauncher` entrypoint
+  are unchanged.
 - **Dependabot auto-merges now build an image.** Auto-merge was enabled with `GITHUB_TOKEN`, so the merge
   was made as `github-actions`, and GitHub starts no workflow for that push: dependency and base-image fixes
   reached `main` but no image. Auto-merge is now enabled with a GitHub App installation token
