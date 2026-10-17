@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Fixed
+- Stripe card payments returned HTTP 402 in test mode. The PaymentIntent was created and
+  confirmed in one server-side call with a `payment_method` but no `return_url`. Stripe's dashboard
+  default enables redirect-based payment methods, so it refused the confirm. When a payment-method
+  token is present, the intent now sets `automatic_payment_methods` with `allow_redirects: never`,
+  which the server-side confirm needs. A new unit test pins the request parameters, without a
+  Stripe key or a network call.
+
 ### Changed
 - Upgrade the payment service to Spring Boot 4.0.8 and Spring Framework 7.0.9, which clears
   **CVE-2026-47884** (spring-webmvc `XsltView` RCE, CRITICAL). It has no open-source fix on Spring
