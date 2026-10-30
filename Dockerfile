@@ -2,7 +2,7 @@
 # Multi-stage build for optimized image size
 
 # Stage 1: Build
-FROM eclipse-temurin:21-jdk-alpine AS builder
+FROM eclipse-temurin:24-jdk-alpine AS builder
 
 WORKDIR /app
 
