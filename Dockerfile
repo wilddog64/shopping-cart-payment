@@ -33,10 +33,11 @@ RUN --mount=type=secret,id=GH_TOKEN \
 RUN java -Djarmode=tools -jar target/*.jar extract --layers --launcher --destination extracted
 
 # Stage 2: Runtime
-FROM eclipse-temurin:24-jre-alpine AS runtime
+FROM eclipse-temurin:21-jre-alpine AS runtime
 
 # Security: Run as non-root user
-RUN addgroup -g 1001 -S appgroup && \
+RUN apk upgrade --no-cache && \
+    addgroup -g 1001 -S appgroup && \
     adduser -u 1001 -S appuser -G appgroup
 
 WORKDIR /app
